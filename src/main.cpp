@@ -29,12 +29,21 @@ int main(void) {
 
   INA219 ina219{i2c1};
 
+  ina219.start(INA219::MODE_32V1A);
+
   while (true) {
     auto current = ina219.current();
     if (current.isOk()) {
       DEBUG_PRINTF("Current = %d", current.unwrap());
     } else {
       DEBUG_MSG("Failed to read current");
+    }
+
+    auto volatage = ina219.voltage();
+    if (volatage.isOk()) {
+      DEBUG_PRINTF("Voltage = %d", volatage.unwrap());
+    } else {
+      DEBUG_MSG("Failed to read voltage");
     }
 
     HAL_Delay(100);

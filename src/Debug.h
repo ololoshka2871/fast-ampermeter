@@ -7,7 +7,7 @@
 #define DEBUG_PRINTF(fmt, ...)
 #define DEBUG_MSG(...)
 #else
-#define DEBUG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
+#define DEBUG_PRINTF(fmt, ...) printf(fmt "\n", __VA_ARGS__)
 #define DEBUG_MSG(str) puts(str)
 #endif
 

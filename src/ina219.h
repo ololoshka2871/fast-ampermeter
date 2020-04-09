@@ -8,13 +8,18 @@
 #include "result.h"
 
 struct INA219 {
-  static constexpr uint8_t DEFAULT_ADDRESS = 0x41;
+  static constexpr uint8_t DEFAULT_ADDRESS = 0x40;
 
   struct Error {};
 
-  INA219(I2C_HandleTypeDef &bus, uint8_t addr = DEFAULT_ADDRESS);
+  // see
+  // https://github.com/adafruit/Adafruit_INA219/blob/master/Adafruit_INA219.cpp
+  enum Mode { MODE_32V1A = 10240 };
 
-  Result<void, Error> calibrate(const std::vector<uint8_t> &values);
+  INA219(I2C_HandleTypeDef &bus, uint8_t addr = DEFAULT_ADDRESS,
+         uint32_t Timeout = HAL_MAX_DELAY);
+
+  Result<void, Error> start(const Mode mode);
 
   Result<int16_t, Error> shunt_voltage();
 
@@ -26,9 +31,11 @@ struct INA219 {
 
 private:
   I2C_HandleTypeDef &bus;
+  uint32_t Timeout;
   uint8_t address;
 
   Result<uint16_t, Error> read(uint8_t Register);
+  Result<void, Error> write(uint8_t Register, uint16_t value);
 };
 
 #endif // INA219_H
