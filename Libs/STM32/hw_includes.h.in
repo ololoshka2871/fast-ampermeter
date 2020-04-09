@@ -1,0 +1,17 @@
+/** Hardware includes */
+
+#ifndef HSE_VALUE
+#warning                                                                       \
+    "HSE_VALUE not defined!, using default from @STM32_FAMILY_LONG_l@xx_hal.h"
+#endif
+
+#include "@STM32_FAMILY_LONG_l@xx.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_cortex.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_dma.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_i2c.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_i2c_ex.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_rcc.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_rcc_ex.h"
+#include "@STM32_FAMILY_LONG_l@xx_ll_gpio.h"
+#include "@STM32_FAMILY_LONG_l@xx_ll_system.h"
