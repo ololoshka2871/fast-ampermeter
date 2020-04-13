@@ -1,6 +1,4 @@
 
 #include <stdlib.h>
 
-#include "softreset.h"
-
-void abort(void) { SoftReset(); }
+void abort(void) { while(1) __asm__("BKPT"); }

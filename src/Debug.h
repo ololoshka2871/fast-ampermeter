@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#ifdef DISABLE_SWO_OUTPUT
+#if defined(DISABLE_SWO_OUTPUT) || defined(STM32F0)
 #define DEBUG_PRINTF(fmt, ...)
 #define DEBUG_MSG(...)
 #else

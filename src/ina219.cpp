@@ -1,3 +1,6 @@
+#include <cmath>
+#include <cstring>
+
 #include "ina219.h"
 
 enum Register {
@@ -19,7 +22,7 @@ enum {
 #define INA219_CONFIG_GAIN_MASK (0x1800) // Gain Mask
 
 /** values for gain bits **/
-enum {
+enum Gain {
   INA219_CONFIG_GAIN_1_40MV = (0x0000),  // Gain 1, 40mV Range
   INA219_CONFIG_GAIN_2_80MV = (0x0800),  // Gain 2, 80mV Range
   INA219_CONFIG_GAIN_4_160MV = (0x1000), // Gain 4, 160mV Range
@@ -61,69 +64,118 @@ enum {
 
 /** values for operating mode **/
 enum {
-  INA219_CONFIG_MODE_POWERDOWN,
-  INA219_CONFIG_MODE_SVOLT_TRIGGERED,
-  INA219_CONFIG_MODE_BVOLT_TRIGGERED,
-  INA219_CONFIG_MODE_SANDBVOLT_TRIGGERED,
-  INA219_CONFIG_MODE_ADCOFF,
-  INA219_CONFIG_MODE_SVOLT_CONTINUOUS,
-  INA219_CONFIG_MODE_BVOLT_CONTINUOUS,
-  INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
+  INA219_CONFIG_MODE_POWERDOWN = 0,
+  INA219_CONFIG_MODE_SVOLT_TRIGGERED = 1,
+  INA219_CONFIG_MODE_BVOLT_TRIGGERED = 2,
+  INA219_CONFIG_MODE_SANDBVOLT_TRIGGERED = 3,
+  INA219_CONFIG_MODE_ADCOFF = 4,
+  INA219_CONFIG_MODE_SVOLT_CONTINUOUS = 5,
+  INA219_CONFIG_MODE_BVOLT_CONTINUOUS = 6,
+  INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS = 7
 };
 
-union uint16tocharConvertor {
-  uint16_t u16;
+struct uint16tocharConvertor {
+  uint16tocharConvertor() = default;
+  uint16tocharConvertor(uint16_t v) : u8{uint8_t(v >> 8), uint8_t(v)} {}
+
+  uint16_t u16() const { return ((uint16_t)u8[0]) << 8 | u8[1]; }
   uint8_t u8[2];
 };
 
+static constexpr float magick = 0.04096f;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static int16_t u16tos16(uint16_t v) { return static_cast<int16_t>(v); }
 
-static uint16_t calc_voltage(uint16_t regval) { return (regval >> 3) * 4; }
+static uint16_t calc_voltage(uint16_t regval) { return regval >> 3; }
+
+static float shunt_voltage_from_raw(int16_t sv) {
+  return fabsf(sv * 0.01f * 0.001f);
+}
+
+static float voltage_from_raw(uint16_t v) { return fabsf(v * 0.001f * 4); }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 INA219::INA219(I2C_HandleTypeDef &bus, uint8_t addr, uint32_t Timeout)
     : bus(bus), Timeout(Timeout), address(addr << 1) {}
 
-Result<void, INA219::Error> INA219::start(const INA219::Mode mode) {
-  uint16_t cal_value{static_cast<uint16_t>(mode)};
+Result<void, INA219::Error>
+INA219::start(const INA219::VoltageRange maxBusVoltage,
+              float Shunt_Resistance_ohm, float max_current) {
+  float VShunt_MAX = max_current * Shunt_Resistance_ohm;
 
-  switch (mode) {
-  case INA219::MODE_32V1A: {
-
-    auto res = write(Calibration, cal_value);
-    if (res.isErr()) {
-      return res;
-    }
-
-    uint16_t config{INA219_CONFIG_BVOLTAGERANGE_32V |
-                    INA219_CONFIG_GAIN_8_320MV | INA219_CONFIG_BADCRES_12BIT |
-                    INA219_CONFIG_SADCRES_12BIT_1S_532US |
-                    INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS};
-
-    return write(Configuration, config);
+  if (VShunt_MAX > 0.320f) {
+    return Err(Error());
   }
-  default:
-    return Err(INA219::Error());
+
+  float CurrentLSB = max_current / ((1u << 15) - 1);
+
+  auto Cal = uint16_t(ceilf(magick / (CurrentLSB * Shunt_Resistance_ohm)));
+
+  currentMultiplier = CurrentLSB;
+  powerMultiplier = 20 * currentMultiplier;
+
+  auto r = write(Calibration, Cal);
+  if (r.isErr()) {
+    return r;
   }
+
+  uint16_t config{(maxBusVoltage == MAX_16V ? INA219_CONFIG_BVOLTAGERANGE_16V
+                                            : INA219_CONFIG_BVOLTAGERANGE_32V) |
+                  INA219_CONFIG_GAIN_8_320MV | INA219_CONFIG_BADCRES_12BIT |
+                  INA219_CONFIG_SADCRES_12BIT_1S_532US |
+                  INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS};
+
+  return write(Configuration, config);
 }
 
-Result<int16_t, INA219::Error> INA219::shunt_voltage() {
+Result<int16_t, INA219::Error> INA219::shunt_voltage_raw() const {
   return read(ShuntVoltage).map(u16tos16);
 }
 
-Result<uint16_t, INA219::Error> INA219::voltage() {
+Result<float, INA219::Error> INA219::shunt_voltage_V() const {
+  return shunt_voltage_raw().map(shunt_voltage_from_raw);
+}
 
+Result<uint16_t, INA219::Error> INA219::voltage_raw() const {
   return read(BusVoltage).map(calc_voltage);
 }
 
-Result<int16_t, INA219::Error> INA219::power() {
+Result<float, INA219::Error> INA219::voltage_V() const {
+  return voltage_raw().map(voltage_from_raw);
+}
+
+Result<int16_t, INA219::Error> INA219::power_raw() const {
   return read(Power).map(u16tos16);
 }
 
-Result<int16_t, INA219::Error> INA219::current() {
+Result<float, INA219::Error> INA219::power_W() const {
+  auto p = power_raw();
+  if (p.isErr()) {
+    return Err(p.storage().get<Error>());
+  }
+  return Ok(p.storage().get<int16_t>() * powerMultiplier);
+}
+
+Result<int16_t, INA219::Error> INA219::current_raw() const {
   return read(Current).map(u16tos16);
 }
 
-Result<uint16_t, INA219::Error> INA219::read(uint8_t Register) {
+Result<float, INA219::Error> INA219::current_A() const {
+  auto I = current_raw();
+  if (I.isErr()) {
+    return Err(I.storage().get<Error>());
+  }
+  return Ok(I.storage().get<int16_t>() * currentMultiplier);
+}
+
+Result<uint16_t, INA219::Error> INA219::calibrationValue() const {
+  return read(Calibration);
+}
+
+Result<uint16_t, INA219::Error> INA219::read(uint8_t Register) const {
   uint16tocharConvertor buf;
 
   if (HAL_I2C_Master_Transmit(&bus, address, &Register, 1, Timeout) != HAL_OK) {
@@ -134,11 +186,12 @@ Result<uint16_t, INA219::Error> INA219::read(uint8_t Register) {
                              Timeout) != HAL_OK) {
     return Err(INA219::Error());
   }
-  return Ok(buf.u16);
+  return Ok(buf.u16());
 }
 
-Result<void, INA219::Error> INA219::write(uint8_t Register, uint16_t value) {
-  uint8_t buf[size_t(Register) + sizeof(value)]{Register};
+Result<void, INA219::Error> INA219::write(uint8_t Register,
+                                          uint16_t value) const {
+  uint8_t buf[sizeof(Register) + sizeof(value)]{Register};
   uint16tocharConvertor v{value};
 
   std::copy(v.u8, &v.u8[sizeof(v.u8)], &buf[1]);

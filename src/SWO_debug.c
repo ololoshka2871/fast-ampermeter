@@ -1,7 +1,13 @@
 
 #include "hw_includes.h"
 
-static void retarget_put_char(int ch) { ITM_SendChar((uint32_t)ch); }
+static void retarget_put_char(int ch) {
+#ifndef STM32F0
+    ITM_SendChar((uint32_t)ch);
+#else
+    (void)ch;
+#endif
+}
 
 int _write(int fd, char *ptr, int len) {
   (void)fd;

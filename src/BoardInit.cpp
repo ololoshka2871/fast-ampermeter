@@ -13,6 +13,8 @@
  *  @{
  */
 
+#define USB_FREQ 48000000L
+
 // Need c++14! (not working as planned!)
 
 /// Class-container of multiplier and divider for PLL
@@ -32,7 +34,10 @@ struct sDiv_Mul {
   constexpr sDiv_Mul(int32_t m = -1, int32_t d = -1)
       : mul(static_cast<uint32_t>(m)), div(static_cast<uint32_t>(d)) {
     if (
-#if defined(STM32F1) || defined(STM32F3)
+#if defined(STM32F0)
+        (m < RCC_PLL_MUL2) || (d < RCC_PREDIV_DIV1) || (m > RCC_PLL_MUL16) ||
+        (d > RCC_PREDIV_DIV16)
+#elif defined(STM32F1) || defined(STM32F3)
         (m < static_cast<int32_t>(RCC_PLL_MUL2)) ||
         (d < static_cast<int32_t>(RCC_HSE_PREDIV_DIV1)) ||
         (m > static_cast<int32_t>(RCC_PLL_MUL16)) ||
@@ -84,7 +89,25 @@ struct sPllconfigF4 {
  * multiplier or compile-time error
  */
 constexpr sDiv_Mul calc_pll_div_mul(const uint32_t div_mul) {
-#if defined(STM32F1) || defined(STM32F3)
+#if defined(STM32F0)
+  const uint32_t muls[] = {RCC_PLL_MUL2,  RCC_PLL_MUL3,  RCC_PLL_MUL4,
+                           RCC_PLL_MUL5,  RCC_PLL_MUL6,  RCC_PLL_MUL7,
+                           RCC_PLL_MUL8,  RCC_PLL_MUL9,  RCC_PLL_MUL10,
+                           RCC_PLL_MUL11, RCC_PLL_MUL12, RCC_PLL_MUL13,
+                           RCC_PLL_MUL14, RCC_PLL_MUL15, RCC_PLL_MUL16};
+  const uint32_t divs[] = {
+      RCC_PREDIV_DIV1,  RCC_PREDIV_DIV2,  RCC_PREDIV_DIV3,  RCC_PREDIV_DIV4,
+      RCC_PREDIV_DIV5,  RCC_PREDIV_DIV6,  RCC_PREDIV_DIV7,  RCC_PREDIV_DIV8,
+      RCC_PREDIV_DIV9,  RCC_PREDIV_DIV10, RCC_PREDIV_DIV11, RCC_PREDIV_DIV12,
+      RCC_PREDIV_DIV13, RCC_PREDIV_DIV14, RCC_PREDIV_DIV15, RCC_PREDIV_DIV16};
+  for (uint32_t mul = 2; mul < sizeof(muls) / sizeof(uint32_t) + 2; ++mul) {
+    for (uint32_t div = 1; div < sizeof(divs) / sizeof(uint32_t) + 1; ++div) {
+      if (mul / div == div_mul) {
+        return sDiv_Mul(muls[mul - 2], divs[div - 1]);
+      }
+    }
+  }
+#elif defined(STM32F1) || defined(STM32F3)
   const uint32_t muls[] = {RCC_PLL_MUL2,  RCC_PLL_MUL3,  RCC_PLL_MUL4,
                            RCC_PLL_MUL5,  RCC_PLL_MUL6,  RCC_PLL_MUL7,
                            RCC_PLL_MUL8,  RCC_PLL_MUL9,  RCC_PLL_MUL10,
@@ -141,10 +164,10 @@ constexpr sDiv_Mul calc_pll_div_mul(const uint32_t div_mul) {
   return sDiv_Mul();
 }
 
+#ifdef STM32F4
 constexpr sPllconfigF4 calc_pll_div_mul_F4(int32_t source_freq,
                                            uint32_t targetCPUFreq,
                                            bool is_USB_used = false) {
-  constexpr int32_t USB_FREQ = 48000000L;
 
   constexpr uint32_t Pv[] = {RCC_PLLP_DIV2, RCC_PLLP_DIV4, RCC_PLLP_DIV6,
                              RCC_PLLP_DIV8};
@@ -191,6 +214,7 @@ constexpr sPllconfigF4 calc_pll_div_mul_F4(int32_t source_freq,
 
   return sPllconfigF4(0);
 }
+#endif
 
 /*!
  * \brief Initialize CPU clicking by setup PLL correct values
@@ -200,7 +224,48 @@ constexpr sPllconfigF4 calc_pll_div_mul_F4(int32_t source_freq,
  * MCU family specific realization
  */
 void InitOSC() {
-#if defined(STM32F1)
+#if defined(STM32F0)
+
+#if (F_CPU != USB_FREQ) || (HSE_VALUE > 0)
+  constexpr auto clk_src = HSE_VALUE < 0 ? HSI48_VALUE : HSE_VALUE;
+  constexpr auto div_mul = calc_pll_div_mul(F_CPU / clk_src);
+  constexpr RCC_OscInitTypeDef RCC_OscInitStruct = {
+      // HSE_VALUE -> PREDIV -> PLLMUL => F_CPU
+      // PREDIV / PLLMUL = F_CPU / HSE_VALUE
+
+      .OscillatorType = RCC_OSCILLATORTYPE_HSE,
+      .HSEState = RCC_HSE_ON,
+      .LSEState = RCC_LSE_OFF,
+      .HSIState = RCC_HSI_OFF,
+      .HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT,
+      .HSI14State = RCC_HSI14_OFF,
+      .HSI14CalibrationValue = RCC_HSI14CALIBRATION_DEFAULT,
+      .LSIState = RCC_LSI_OFF,
+      .HSI48State = RCC_HSI48_OFF,
+      .PLL = {
+          .PLLState = RCC_PLL_ON,
+          .PLLSource = RCC_PLLSOURCE_HSE,
+          .PLLMUL = div_mul.mul,
+          .PREDIV = div_mul.div,
+      }};
+#else
+  constexpr RCC_OscInitTypeDef RCC_OscInitStruct = {
+      // HSI48 -> F_CPU
+      // HSI48 -> USB
+
+      .OscillatorType = RCC_OSCILLATORTYPE_HSI48,
+      .HSEState = RCC_HSE_OFF,
+      .LSEState = RCC_LSE_OFF,
+      .HSIState = RCC_HSI_OFF,
+      .HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT,
+      .HSI14State = RCC_HSI14_OFF,
+      .HSI14CalibrationValue = RCC_HSI14CALIBRATION_DEFAULT,
+      .LSIState = RCC_LSI_OFF,
+      .HSI48State = RCC_HSI48_ON,
+      .PLL = {.PLLState = RCC_PLL_OFF}};
+#endif
+
+#elif defined(STM32F1)
   constexpr auto div_mul = calc_pll_div_mul(F_CPU / HSE_VALUE);
   constexpr RCC_OscInitTypeDef RCC_OscInitStruct = {
       // HSE_VALUE -> PREDIV1 -> PLLMUL => F_CPU
@@ -282,12 +347,20 @@ void InitOSC() {
 void Configure_AHB_Clocks() {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
-                                RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+                                RCC_CLOCKTYPE_PCLK1
+#if defined(STM32F1) || defined(STM32F3) || defined(STM32L4) || defined(STM32F4)
+                                | RCC_CLOCKTYPE_PCLK2
+#endif
+      ;
 
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 
-#if defined(STM32F1) || defined(STM32F3)
+#if defined(STM32F0)
+  RCC_ClkInitStruct.APB1CLKDivider =
+      F_CPU > 36000000U ? RCC_HCLK_DIV2 : RCC_HCLK_DIV1;
+  auto latency = F_CPU < 24000000U ? FLASH_LATENCY_0 : FLASH_LATENCY_1;
+#elif defined(STM32F1) || defined(STM32F3)
   RCC_ClkInitStruct.APB1CLKDivider =
       F_CPU > 36000000U ? RCC_HCLK_DIV2 : RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;

@@ -3,8 +3,6 @@
 set(BOOTLOADER_SRC
     BoardInit.cpp
     BoardInit.h
-    softreset.c
-    softreset.h
     systick.c
     msp.cpp
     main.cpp
@@ -18,15 +16,24 @@ set(BOOTLOADER_SRC
 )
 
 if(STM32_FAMILY STREQUAL "F3")
-    list(APPEND BOOTLOADER_SRC interrupts_f3.c)
+    list(APPEND BOOTLOADER_SRC
+        interrupts_f3.c
+        SWO_debug.c
+        )
 endif()
 
 if(STM32_FAMILY STREQUAL "L4")
-    list(APPEND BOOTLOADER_SRC interrupts_l4.c)
+    list(APPEND BOOTLOADER_SRC
+        interrupts_l4.c
+        SWO_debug.c
+        )
 endif()
 
 if(STM32_FAMILY STREQUAL "F4")
-    list(APPEND BOOTLOADER_SRC interrupts_f4.c)
+    list(APPEND BOOTLOADER_SRC
+        interrupts_f4.c
+        SWO_debug.c
+        )
 endif()
 
 ################################################################################
@@ -47,9 +54,21 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     result
 )
 
+function(show_object_size target)
+    string(REPLACE "objcopy" "size" CMAKE_OBJSIZE "${CMAKE_OBJCOPY}")
+    add_custom_command(
+        TARGET ${target} POST_BUILD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${CMAKE_OBJSIZE} ${target}
+    )
+endfunction()
+
+################################################################################
+
 STM32_GENERATE_MAP_FILE(${PROJECT_NAME})
 STM32_SET_TARGET_PROPERTIES(${PROJECT_NAME})
 STM32_SET_TARGET_LD_SPEC(${PROJECT_NAME} "nano.specs")
 STM32_SET_TARGET_LD_SPEC(${PROJECT_NAME} "nosys.specs")
 
+show_object_size(${PROJECT_NAME})
 STM32_ADD_HEX_BIN_TARGETS(${PROJECT_NAME})

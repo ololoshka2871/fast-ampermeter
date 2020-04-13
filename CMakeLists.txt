@@ -3,19 +3,19 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
 ################################################################################
 # platform diffenitions
 
-set(STM32_CHIP                          "STM32F411CE"
+set(STM32_CHIP                          "STM32F042C6"
     CACHE STRING "Target STM32 chip name")
 
-set(CLOCK_F_CPU                         60000000
+set(CLOCK_F_CPU                         48000000
     CACHE STRING "Target CPU Frequency")
 
-set(CLOCK_F_XTAL                        25000000
+set(CLOCK_F_XTAL                        -1
     CACHE STRING "CPU Quartz resonator fequency")
 
 set(BUILD_USE_LTO                       FALSE
     CACHE BOOL "Use link-time optimisztion")
 
-set(DISABLE_SWO_OUTPUT                  FALSE
+set(DISABLE_SWO_OUTPUT                  TRUE
     CACHE BOOL "Disable SWO debug messages")
 
 
