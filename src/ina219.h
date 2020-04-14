@@ -88,6 +88,8 @@ private:
 
   Result<uint16_t, Error> read(uint8_t Register) const;
   Result<void, Error> write(uint8_t Register, uint16_t value) const;
+
+  void reset_i2c() const;
 };
 
 #endif // INA219_H

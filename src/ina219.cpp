@@ -179,11 +179,13 @@ Result<uint16_t, INA219::Error> INA219::read(uint8_t Register) const {
   uint16tocharConvertor buf;
 
   if (HAL_I2C_Master_Transmit(&bus, address, &Register, 1, Timeout) != HAL_OK) {
+    reset_i2c();
     return Err(INA219::Error());
   }
 
   if (HAL_I2C_Master_Receive(&bus, address, buf.u8, std::size(buf.u8),
                              Timeout) != HAL_OK) {
+    reset_i2c();
     return Err(INA219::Error());
   }
   return Ok(buf.u16());
@@ -196,8 +198,27 @@ Result<void, INA219::Error> INA219::write(uint8_t Register,
 
   std::copy(v.u8, &v.u8[sizeof(v.u8)], &buf[1]);
 
-  return (HAL_I2C_Master_Transmit(&bus, address, buf, sizeof(buf), Timeout) !=
-          HAL_OK)
-             ? Result<void, INA219::Error>(Err(INA219::Error()))
-             : Ok();
+  auto res = HAL_I2C_Master_Transmit(&bus, address, buf, sizeof(buf), Timeout);
+  if (res != HAL_OK) {
+    reset_i2c();
+    return Err(INA219::Error());
+  } else {
+    return Ok();
+  }
+}
+
+void INA219::reset_i2c() const {
+  if (bus.Instance == I2C1) {
+    __HAL_RCC_I2C1_FORCE_RESET();
+    HAL_Delay(1);
+    __HAL_RCC_I2C1_RELEASE_RESET();
+  }
+#ifdef __HAL_RCC_I2C2_FORCE_RESET
+  if (bus.Instance == I2C2) {
+    __HAL_RCC_I2C2_FORCE_RESET();
+    HAL_Delay(1);
+    __HAL_RCC_I2C2_RELEASE_RESET();
+  }
+#endif
+  HAL_I2C_Init(&bus);
 }

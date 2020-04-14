@@ -38,6 +38,7 @@ SET(HAL_SRC
     ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_gpio.c   
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_hcd.c
     ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_i2c.c
+    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_i2c_ex.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_i2s.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_irda.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_iwdg.c

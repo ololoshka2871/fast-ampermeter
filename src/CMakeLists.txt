@@ -9,6 +9,7 @@ set(BOOTLOADER_SRC
     hardfault.cpp
     _init.c
     stubs.c
+    stubs.cpp
     SWO_debug.c
 
     ina219.h
