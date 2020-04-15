@@ -78,18 +78,32 @@ struct INA219 {
 
   Result<uint16_t, Error> calibrationValue() const;
 
+  Result<void, INA219::Error> StartDMAreadAllTo();
+
 private:
   I2C_HandleTypeDef &bus;
   uint32_t Timeout;
 
   float currentMultiplier, powerMultiplier;
 
+  uint16_t raw_data[4];
+
+  static INA219 *__this;
+
   uint8_t address;
 
   Result<uint16_t, Error> read(uint8_t Register) const;
   Result<void, Error> write(uint8_t Register, uint16_t value) const;
 
+  void DMARead_raw_vals();
+  void send_error();
+  void send_result();
+
   void reset_i2c() const;
+
+  static void DMA_TXtransferComplead(I2C_HandleTypeDef *i2c);
+  static void DMA_RXtransferComplead(I2C_HandleTypeDef *i2c);
+  static void DMAError(I2C_HandleTypeDef *i2c);
 };
 
 #endif // INA219_H

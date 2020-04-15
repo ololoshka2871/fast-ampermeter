@@ -16,24 +16,27 @@ set(BOOTLOADER_SRC
     ina219.cpp
 )
 
+if(STM32_FAMILY STREQUAL "F0")
+    list(APPEND BOOTLOADER_SRC
+        interrupts_f0.c
+        )
+endif()
+
 if(STM32_FAMILY STREQUAL "F3")
     list(APPEND BOOTLOADER_SRC
         interrupts_f3.c
-        SWO_debug.c
         )
 endif()
 
 if(STM32_FAMILY STREQUAL "L4")
     list(APPEND BOOTLOADER_SRC
         interrupts_l4.c
-        SWO_debug.c
         )
 endif()
 
 if(STM32_FAMILY STREQUAL "F4")
     list(APPEND BOOTLOADER_SRC
         interrupts_f4.c
-        SWO_debug.c
         )
 endif()
 

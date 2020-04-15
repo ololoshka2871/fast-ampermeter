@@ -31,7 +31,7 @@ SET(HAL_SRC
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_crc.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_dac.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_dac_ex.c
-#    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_dma.c
+    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_dma.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_eth.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_flash.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_flash_ex.c
@@ -105,6 +105,10 @@ if (HAL_DEFINES_SPECIAL)
         ${HAL_DEFINES_SPECIAL}
     )
 endif()
+
+target_compile_definitions(HAL PUBLIC
+    -DUSE_HAL_I2C_REGISTER_CALLBACKS=1
+)
 
 ###################
 # Result

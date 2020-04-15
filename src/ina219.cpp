@@ -98,8 +98,12 @@ static float voltage_from_raw(uint16_t v) { return fabsf(v * 0.001f * 4); }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+INA219 *INA219::__this = nullptr;
+
 INA219::INA219(I2C_HandleTypeDef &bus, uint8_t addr, uint32_t Timeout)
-    : bus(bus), Timeout(Timeout), address(addr << 1) {}
+    : bus(bus), Timeout(Timeout), address(addr << 1) {
+  __this = this;
+}
 
 Result<void, INA219::Error>
 INA219::start(const INA219::VoltageRange maxBusVoltage,
@@ -175,6 +179,24 @@ Result<uint16_t, INA219::Error> INA219::calibrationValue() const {
   return read(Calibration);
 }
 
+Result<void, INA219::Error> INA219::StartDMAreadAllTo() {
+  uint8_t registers_start_address = ShuntVoltage;
+  HAL_StatusTypeDef res;
+
+  res = HAL_I2C_Master_Seq_Transmit_DMA(&bus, address, &registers_start_address,
+                                        sizeof(registers_start_address),
+                                        I2C_FIRST_FRAME | I2C_LAST_FRAME);
+
+  if (res != HAL_OK) {
+    return Err(Error());
+  }
+
+  bus.MasterTxCpltCallback = DMA_TXtransferComplead;
+  bus.ErrorCallback = DMAError;
+
+  return Ok();
+}
+
 Result<uint16_t, INA219::Error> INA219::read(uint8_t Register) const {
   uint16tocharConvertor buf;
 
@@ -207,6 +229,29 @@ Result<void, INA219::Error> INA219::write(uint8_t Register,
   }
 }
 
+void INA219::DMARead_raw_vals() {
+  bus.MasterTxCpltCallback = nullptr;
+
+  auto res = HAL_I2C_Master_Seq_Receive_DMA(
+      &bus, address, reinterpret_cast<uint8_t *>(raw_data), sizeof(raw_data),
+      I2C_FIRST_FRAME | I2C_LAST_FRAME);
+  if (res != HAL_OK) {
+    send_error();
+    bus.ErrorCallback = nullptr;
+    return;
+  }
+
+  bus.MasterRxCpltCallback = DMA_RXtransferComplead;
+  bus.ErrorCallback = DMAError;
+}
+
+void INA219::send_error() {}
+
+void INA219::send_result() {
+  bus.MasterRxCpltCallback = nullptr;
+  bus.ErrorCallback = nullptr;
+}
+
 void INA219::reset_i2c() const {
   if (bus.Instance == I2C1) {
     __HAL_RCC_I2C1_FORCE_RESET();
@@ -222,3 +267,13 @@ void INA219::reset_i2c() const {
 #endif
   HAL_I2C_Init(&bus);
 }
+
+void INA219::DMA_TXtransferComplead(I2C_HandleTypeDef *i2c) {
+  __this->DMARead_raw_vals();
+}
+
+void INA219::DMA_RXtransferComplead(I2C_HandleTypeDef *i2c) {
+  __this->send_result();
+}
+
+void INA219::DMAError(I2C_HandleTypeDef *i2c) { __this->send_error(); }
