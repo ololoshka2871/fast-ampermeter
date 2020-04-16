@@ -6,17 +6,16 @@
 #include "result.h"
 
 struct INA219 {
-private:
-  struct RawValues;
-
 public:
   static constexpr uint8_t DEFAULT_ADDRESS = 0x40;
 
-  struct Values {
-    float ShuntVoltage;
-    float BusVoltage;
-    float Power;
-    float Current;
+  enum Register {
+    Configuration = 0x00,
+    ShuntVoltage = 0x01,
+    BusVoltage = 0x02,
+    Power = 0x03,
+    Current = 0x04,
+    Calibration = 0x05
   };
 
   // see
@@ -69,6 +68,12 @@ public:
   INA219(I2C_HandleTypeDef &bus, uint8_t addr = DEFAULT_ADDRESS,
          uint32_t Timeout = HAL_MAX_DELAY);
 
+  INA219(const INA219 &ref) = delete;
+  INA219(INA219 &&ref);
+
+  I2C_HandleTypeDef &getBus() { return *bus; }
+  uint8_t getAddress() { return address; }
+
   Result<void, HAL_StatusTypeDef> start(const VoltageRange maxBusVoltage,
                                         float Shunt_Resistance_ohm = 0.1f,
                                         float max_current = 1.0);
@@ -87,36 +92,26 @@ public:
 
   Result<uint16_t, HAL_StatusTypeDef> getCalibrationValue_sync();
 
-  Result<Values, HAL_StatusTypeDef> lastResults() const;
-
   void update();
 
-private:
-  struct RawValues {
-    int16_t ShuntVoltage;
-    uint16_t BusVoltage;
-    int16_t Power;
-    int16_t Current;
-  };
+  static int16_t convert_u16tos16(uint16_t v);
+  static uint16_t voltage_raw(uint16_t regval);
 
-  template <typename Tr, typename Tc>
-  auto readRawValue(const uint8_t Register, const Tc &converter, Tr &cache) {
-    auto value = read(Register).map(converter);
-    if (value.isOk()) {
-      cache = value.unwrap();
-    }
-    return value;
+  float power_from_raw(int16_t raw_value) const;
+  float current_from_raw(int16_t raw_value) const;
+  static float shunt_voltage_from_raw(int16_t sv);
+  static float voltage_from_raw(uint16_t v);
+
+private:
+  template <typename Tc>
+  auto readRawValue(const Register reg, const Tc &converter) {
+    return read(reg).map(converter);
   }
 
-  I2C_HandleTypeDef &bus;
+  I2C_HandleTypeDef *bus;
   uint32_t Timeout;
 
   float currentMultiplier, powerMultiplier;
-
-  RawValues rawCache;
-  HAL_StatusTypeDef LastError;
-
-  static INA219 *__this;
 
   uint8_t address;
 
@@ -128,15 +123,6 @@ private:
   void send_result();
 
   void reset_i2c() const;
-
-  static void DMA_TXtransferComplead(I2C_HandleTypeDef *i2c);
-  static void DMA_RXtransferComplead(I2C_HandleTypeDef *i2c);
-  static void DMAError(I2C_HandleTypeDef *i2c);
-
-  Values buildResult() const;
-
-  float power_from_raw(int16_t raw_value) const;
-  float current_from_raw(int16_t raw_value) const;
 };
 
 #endif // INA219_H

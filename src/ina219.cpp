@@ -3,15 +3,6 @@
 
 #include "ina219.h"
 
-enum Register {
-  Configuration = 0x00,
-  ShuntVoltage = 0x01,
-  BusVoltage = 0x02,
-  Power = 0x03,
-  Current = 0x04,
-  Calibration = 0x05
-};
-
 /** bus voltage range values **/
 enum {
   INA219_CONFIG_BVOLTAGERANGE_16V = (0x0000), // 0-16V Range
@@ -86,23 +77,32 @@ static constexpr float magick = 0.04096f;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static int16_t u16tos16(uint16_t v) { return static_cast<int16_t>(v); }
+int16_t INA219::convert_u16tos16(uint16_t v) { return static_cast<int16_t>(v); }
 
-static uint16_t calc_voltage(uint16_t regval) { return regval >> 3; }
+uint16_t INA219::voltage_raw(uint16_t regval) { return regval >> 3; }
 
-static float shunt_voltage_from_raw(int16_t sv) {
-  return fabsf(sv * 0.01f * 0.001f);
+float INA219::shunt_voltage_from_raw(int16_t sv) { return sv * 0.01f * 0.001f; }
+
+float INA219::voltage_from_raw(uint16_t v) { return fabsf(v * 0.001f * 4); }
+
+float INA219::power_from_raw(int16_t raw_value) const {
+  return raw_value * powerMultiplier;
 }
 
-static float voltage_from_raw(uint16_t v) { return fabsf(v * 0.001f * 4); }
+float INA219::current_from_raw(int16_t raw_value) const {
+  return raw_value * currentMultiplier;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-INA219 *INA219::__this = nullptr;
-
 INA219::INA219(I2C_HandleTypeDef &bus, uint8_t addr, uint32_t Timeout)
-    : bus(bus), Timeout(Timeout), address(addr << 1) {
-  __this = this;
+    : bus(&bus), Timeout(Timeout), address(addr << 1) {}
+
+INA219::INA219(INA219 &&ref)
+    : bus(ref.bus), Timeout(ref.Timeout),
+      currentMultiplier(ref.currentMultiplier),
+      powerMultiplier(ref.powerMultiplier), address(ref.address) {
+  ref.bus = nullptr;
 }
 
 Result<void, HAL_StatusTypeDef>
@@ -126,17 +126,18 @@ INA219::start(const INA219::VoltageRange maxBusVoltage,
     return res;
   }
 
-  uint16_t config{(maxBusVoltage == MAX_16V ? INA219_CONFIG_BVOLTAGERANGE_16V
-                                            : INA219_CONFIG_BVOLTAGERANGE_32V) |
-                  INA219_CONFIG_GAIN_8_320MV | INA219_CONFIG_BADCRES_12BIT |
-                  INA219_CONFIG_SADCRES_12BIT_1S_532US |
-                  INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS};
+  uint16_t config{
+      uint8_t(maxBusVoltage == MAX_16V ? INA219_CONFIG_BVOLTAGERANGE_16V
+                                       : INA219_CONFIG_BVOLTAGERANGE_32V) |
+      uint8_t(INA219_CONFIG_GAIN_8_320MV | INA219_CONFIG_BADCRES_12BIT |
+              INA219_CONFIG_SADCRES_12BIT_1S_532US |
+              INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS)};
 
   return write(Configuration, config);
 }
 
 Result<int16_t, HAL_StatusTypeDef> INA219::shunt_voltage_raw_sync() {
-  return readRawValue(ShuntVoltage, u16tos16, rawCache.ShuntVoltage);
+  return readRawValue(ShuntVoltage, convert_u16tos16);
 }
 
 Result<float, HAL_StatusTypeDef> INA219::shunt_voltage_V_sync() {
@@ -144,7 +145,7 @@ Result<float, HAL_StatusTypeDef> INA219::shunt_voltage_V_sync() {
 }
 
 Result<uint16_t, HAL_StatusTypeDef> INA219::voltage_raw_sync() {
-  return readRawValue(BusVoltage, calc_voltage, rawCache.BusVoltage);
+  return readRawValue(BusVoltage, voltage_raw);
 }
 
 Result<float, HAL_StatusTypeDef> INA219::voltage_V_sync() {
@@ -152,7 +153,7 @@ Result<float, HAL_StatusTypeDef> INA219::voltage_V_sync() {
 }
 
 Result<int16_t, HAL_StatusTypeDef> INA219::power_raw_sync() {
-  return readRawValue(Power, u16tos16, rawCache.Power);
+  return readRawValue(Power, convert_u16tos16);
 }
 
 Result<float, HAL_StatusTypeDef> INA219::power_W_sync() {
@@ -164,7 +165,7 @@ Result<float, HAL_StatusTypeDef> INA219::power_W_sync() {
 }
 
 Result<int16_t, HAL_StatusTypeDef> INA219::current_raw_sync() {
-  return readRawValue(Current, u16tos16, rawCache.BusVoltage);
+  return readRawValue(Current, convert_u16tos16);
 }
 
 Result<float, HAL_StatusTypeDef> INA219::current_A_sync() {
@@ -179,25 +180,19 @@ Result<uint16_t, HAL_StatusTypeDef> INA219::getCalibrationValue_sync() {
   return read(Calibration);
 }
 
-Result<INA219::Values, HAL_StatusTypeDef> INA219::lastResults() const {
-  return LastError != HAL_OK
-             ? Result<INA219::Values, HAL_StatusTypeDef>(Err(LastError))
-             : Ok(buildResult());
-}
-
 Result<uint16_t, HAL_StatusTypeDef> INA219::read(uint8_t Register) const {
   uint16tocharConvertor buf;
 
   HAL_StatusTypeDef res;
 
-  res = HAL_I2C_Master_Transmit(&bus, address, &Register, 1, Timeout);
+  res = HAL_I2C_Master_Transmit(bus, address, &Register, 1, Timeout);
   if (res != HAL_OK) {
     reset_i2c();
     return Err(res);
   }
 
   res =
-      HAL_I2C_Master_Receive(&bus, address, buf.u8, std::size(buf.u8), Timeout);
+      HAL_I2C_Master_Receive(bus, address, buf.u8, std::size(buf.u8), Timeout);
   if (res != HAL_OK) {
     reset_i2c();
     return Err(res);
@@ -212,7 +207,7 @@ Result<void, HAL_StatusTypeDef> INA219::write(uint8_t Register,
 
   std::copy(v.u8, &v.u8[sizeof(v.u8)], &buf[1]);
 
-  auto res = HAL_I2C_Master_Transmit(&bus, address, buf, sizeof(buf), Timeout);
+  auto res = HAL_I2C_Master_Transmit(bus, address, buf, sizeof(buf), Timeout);
   if (res != HAL_OK) {
     reset_i2c();
     return Err(res);
@@ -222,7 +217,7 @@ Result<void, HAL_StatusTypeDef> INA219::write(uint8_t Register,
 }
 
 void INA219::reset_i2c() const {
-  if (bus.Instance == I2C1) {
+  if (bus->Instance == I2C1) {
     __HAL_RCC_I2C1_FORCE_RESET();
     HAL_Delay(1);
     __HAL_RCC_I2C1_RELEASE_RESET();
@@ -234,75 +229,5 @@ void INA219::reset_i2c() const {
     __HAL_RCC_I2C2_RELEASE_RESET();
   }
 #endif
-  HAL_I2C_Init(&bus);
+  HAL_I2C_Init(bus);
 }
-
-INA219::Values INA219::buildResult() const {
-  return Values{shunt_voltage_from_raw(rawCache.ShuntVoltage),
-                voltage_from_raw(rawCache.BusVoltage),
-                power_from_raw(rawCache.Power),
-                current_from_raw(rawCache.Current)};
-}
-
-float INA219::power_from_raw(int16_t raw_value) const {
-  return raw_value * powerMultiplier;
-}
-
-float INA219::current_from_raw(int16_t raw_value) const {
-  return raw_value * currentMultiplier;
-}
-
-/*
-void INA219::update() {
-  uint8_t registers_start_address = ShuntVoltage;
-  HAL_StatusTypeDef res;
-
-  res = HAL_I2C_Master_Seq_Transmit_DMA(&bus, address, &registers_start_address,
-                                        sizeof(registers_start_address),
-                                        I2C_FIRST_FRAME | I2C_LAST_FRAME);
-
-  if (res != HAL_OK) {
-    return Err(Error());
-  }
-
-  bus.MasterTxCpltCallback = DMA_TXtransferComplead;
-  bus.ErrorCallback = DMAError;
-
-  return Ok();
-}
-
-
-void INA219::DMARead_raw_vals() {
-  bus.MasterTxCpltCallback = nullptr;
-
-  auto res = HAL_I2C_Master_Seq_Receive_DMA(
-      &bus, address, reinterpret_cast<uint8_t *>(raw_data), sizeof(raw_data),
-      I2C_FIRST_FRAME | I2C_LAST_FRAME);
-  if (res != HAL_OK) {
-    send_error();
-    bus.ErrorCallback = nullptr;
-    return;
-  }
-
-  bus.MasterRxCpltCallback = DMA_RXtransferComplead;
-  bus.ErrorCallback = DMAError;
-}
-
-void INA219::send_error() {}
-
-void INA219::send_result() {
-  bus.MasterRxCpltCallback = nullptr;
-  bus.ErrorCallback = nullptr;
-}
-
-
-void INA219::DMA_TXtransferComplead(I2C_HandleTypeDef *i2c) {
-  __this->DMARead_raw_vals();
-}
-
-void INA219::DMA_RXtransferComplead(I2C_HandleTypeDef *i2c) {
-  __this->send_result();
-}
-
-void INA219::DMAError(I2C_HandleTypeDef *i2c) { __this->send_error(); }
-*/

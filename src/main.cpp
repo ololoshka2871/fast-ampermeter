@@ -3,6 +3,8 @@
  *  \brief fast-ampermeter main
  */
 
+#include <cassert>
+
 #include "hw_includes.h"
 
 #include "result.h"
@@ -11,6 +13,7 @@
 #include "Debug.h"
 
 #include "ina219.h"
+#include "ina219dma_reader.h"
 
 static DMA_HandleTypeDef hdma_tx{
     DMA1_Channel2,
@@ -23,12 +26,12 @@ static DMA_HandleTypeDef hdma_rx{
      DMA_PDATAALIGN_BYTE, DMA_MDATAALIGN_BYTE, DMA_NORMAL, DMA_PRIORITY_HIGH}};
 
 I2C_HandleTypeDef i2c1{I2C1,
-                       {0x0010091A, // сгенерировано кубом
+                       {0x00100203, // сгенерировано кубом
                         0, I2C_ADDRESSINGMODE_7BIT, I2C_DUALADDRESS_DISABLE, 0,
                         I2C_OA2_NOMASK, I2C_GENERALCALL_DISABLE,
                         I2C_NOSTRETCH_DISABLE}};
 
-static Result<int, HAL_StatusTypeDef> init_DMA(I2C_HandleTypeDef *i2c) {
+static Result<void, HAL_StatusTypeDef> init_DMA(I2C_HandleTypeDef &i2c) {
   HAL_StatusTypeDef res;
 
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -39,7 +42,7 @@ static Result<int, HAL_StatusTypeDef> init_DMA(I2C_HandleTypeDef *i2c) {
   }
 
   /* Associate the initialized DMA handle to the the I2C handle */
-  __HAL_LINKDMA(i2c, hdmatx, hdma_tx);
+  __HAL_LINKDMA(&i2c, hdmatx, hdma_tx);
 
   res = HAL_DMA_Init(&hdma_rx);
   if (res != HAL_OK) {
@@ -47,7 +50,7 @@ static Result<int, HAL_StatusTypeDef> init_DMA(I2C_HandleTypeDef *i2c) {
   }
 
   /* Associate the initialized DMA handle to the the I2C handle */
-  __HAL_LINKDMA(i2c, hdmarx, hdma_rx);
+  __HAL_LINKDMA(&i2c, hdmarx, hdma_rx);
 
   /*##-5- Configure the NVIC for DMA #########################################*/
   /* NVIC configuration for DMA transfer complete interrupt (I2Cx_TX and
@@ -60,7 +63,7 @@ static Result<int, HAL_StatusTypeDef> init_DMA(I2C_HandleTypeDef *i2c) {
   HAL_NVIC_SetPriority(I2C1_IRQn, 0, 1);
   HAL_NVIC_EnableIRQ(I2C1_IRQn);
 
-  return Ok(0);
+  return Ok();
 }
 
 static Result<I2C_HandleTypeDef *, HAL_StatusTypeDef> init_I2C() {
@@ -96,34 +99,23 @@ int main(void) {
 
   InitBoard();
 
-  auto i2c1 = init_I2C().unwrap();
-  init_DMA(i2c1).unwrap();
-
-  INA219 ina219{*i2c1, INA219::DEFAULT_ADDRESS, 10};
-
+  INA219 ina219{*init_I2C().unwrap(), INA219::DEFAULT_ADDRESS, 10};
   ina219.start(INA219::MAX_16V, 0.4f, 0.3f);
 
-  volatile float I, V, c;
+  INA219DMA_Reader reader(std::move(ina219), init_DMA);
 
-  // ina219.update();
+  volatile float I, V;
+
+  auto res = reader.update(
+      [&I, &V](Result<INA219DMA_Reader::Values, HAL_StatusTypeDef> r) {
+        auto _r = r.unwrap();
+        I = _r.Current;
+        V = _r.BusVoltage;
+      });
+  assert(res == HAL_OK);
 
   while (true) {
-#if 1
-    auto current = ina219.current_A_sync();
-    if (current.isOk()) {
-      I = current.unwrap();
-    }
-
-    auto volatage = ina219.voltage_V_sync();
-    if (volatage.isOk()) {
-      V = volatage.unwrap();
-    }
-
-    auto _c = ina219.getCalibrationValue_sync();
-    if (_c.isOk()) {
-      c = _c.unwrap();
-    }
-#endif
-    HAL_Delay(100);
+    reader.pool();
+    __asm__("wfi");
   }
 }

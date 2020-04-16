@@ -14,6 +14,9 @@ set(BOOTLOADER_SRC
 
     ina219.h
     ina219.cpp
+
+    ina219dma_reader.cpp
+    ina219dma_reader.h
 )
 
 if(STM32_FAMILY STREQUAL "F0")
