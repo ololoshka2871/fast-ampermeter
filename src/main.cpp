@@ -105,21 +105,21 @@ int main(void) {
 
   volatile float I, V, c;
 
-  ina219.StartDMAreadAllTo();
+  // ina219.update();
 
   while (true) {
-#if 0
-    auto current = ina219.current_A();
+#if 1
+    auto current = ina219.current_A_sync();
     if (current.isOk()) {
       I = current.unwrap();
     }
 
-    auto volatage = ina219.voltage_V();
+    auto volatage = ina219.voltage_V_sync();
     if (volatage.isOk()) {
       V = volatage.unwrap();
     }
 
-    auto _c = ina219.calibrationValue();
+    auto _c = ina219.getCalibrationValue_sync();
     if (_c.isOk()) {
       c = _c.unwrap();
     }

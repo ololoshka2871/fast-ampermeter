@@ -6,9 +6,18 @@
 #include "result.h"
 
 struct INA219 {
+private:
+  struct RawValues;
+
+public:
   static constexpr uint8_t DEFAULT_ADDRESS = 0x40;
 
-  struct Error {};
+  struct Values {
+    float ShuntVoltage;
+    float BusVoltage;
+    float Power;
+    float Current;
+  };
 
   // see
   // https://github.com/adafruit/Adafruit_INA219/blob/master/Adafruit_INA219.cpp
@@ -60,40 +69,59 @@ struct INA219 {
   INA219(I2C_HandleTypeDef &bus, uint8_t addr = DEFAULT_ADDRESS,
          uint32_t Timeout = HAL_MAX_DELAY);
 
-  Result<void, Error> start(const VoltageRange maxBusVoltage,
-                            float Shunt_Resistance_ohm = 0.1f,
-                            float max_current = 1.0);
+  Result<void, HAL_StatusTypeDef> start(const VoltageRange maxBusVoltage,
+                                        float Shunt_Resistance_ohm = 0.1f,
+                                        float max_current = 1.0);
 
-  Result<int16_t, Error> shunt_voltage_raw() const;
-  Result<float, Error> shunt_voltage_V() const;
+  Result<int16_t, HAL_StatusTypeDef> shunt_voltage_raw_sync();
+  Result<float, HAL_StatusTypeDef> shunt_voltage_V_sync();
 
-  Result<uint16_t, Error> voltage_raw() const;
-  Result<float, Error> voltage_V() const;
+  Result<uint16_t, HAL_StatusTypeDef> voltage_raw_sync();
+  Result<float, HAL_StatusTypeDef> voltage_V_sync();
 
-  Result<int16_t, Error> power_raw() const;
-  Result<float, Error> power_W() const;
+  Result<int16_t, HAL_StatusTypeDef> power_raw_sync();
+  Result<float, HAL_StatusTypeDef> power_W_sync();
 
-  Result<int16_t, Error> current_raw() const;
-  Result<float, Error> current_A() const;
+  Result<int16_t, HAL_StatusTypeDef> current_raw_sync();
+  Result<float, HAL_StatusTypeDef> current_A_sync();
 
-  Result<uint16_t, Error> calibrationValue() const;
+  Result<uint16_t, HAL_StatusTypeDef> getCalibrationValue_sync();
 
-  Result<void, INA219::Error> StartDMAreadAllTo();
+  Result<Values, HAL_StatusTypeDef> lastResults() const;
+
+  void update();
 
 private:
+  struct RawValues {
+    int16_t ShuntVoltage;
+    uint16_t BusVoltage;
+    int16_t Power;
+    int16_t Current;
+  };
+
+  template <typename Tr, typename Tc>
+  auto readRawValue(const uint8_t Register, const Tc &converter, Tr &cache) {
+    auto value = read(Register).map(converter);
+    if (value.isOk()) {
+      cache = value.unwrap();
+    }
+    return value;
+  }
+
   I2C_HandleTypeDef &bus;
   uint32_t Timeout;
 
   float currentMultiplier, powerMultiplier;
 
-  uint16_t raw_data[4];
+  RawValues rawCache;
+  HAL_StatusTypeDef LastError;
 
   static INA219 *__this;
 
   uint8_t address;
 
-  Result<uint16_t, Error> read(uint8_t Register) const;
-  Result<void, Error> write(uint8_t Register, uint16_t value) const;
+  Result<uint16_t, HAL_StatusTypeDef> read(uint8_t Register) const;
+  Result<void, HAL_StatusTypeDef> write(uint8_t Register, uint16_t value) const;
 
   void DMARead_raw_vals();
   void send_error();
@@ -104,6 +132,11 @@ private:
   static void DMA_TXtransferComplead(I2C_HandleTypeDef *i2c);
   static void DMA_RXtransferComplead(I2C_HandleTypeDef *i2c);
   static void DMAError(I2C_HandleTypeDef *i2c);
+
+  Values buildResult() const;
+
+  float power_from_raw(int16_t raw_value) const;
+  float current_from_raw(int16_t raw_value) const;
 };
 
 #endif // INA219_H
