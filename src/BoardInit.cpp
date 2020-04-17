@@ -262,7 +262,7 @@ void InitOSC() {
       .HSI14CalibrationValue = RCC_HSI14CALIBRATION_DEFAULT,
       .LSIState = RCC_LSI_OFF,
       .HSI48State = RCC_HSI48_ON,
-      .PLL = {.PLLState = RCC_PLL_OFF}};
+      .PLL = {.PLLState = RCC_PLL_NONE}};
 #endif
 
 #elif defined(STM32F1)
@@ -353,7 +353,12 @@ void Configure_AHB_Clocks() {
 #endif
       ;
 
+#if defined(STM32F0) && (HSE_VALUE <= 0)
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI48;
+#else
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+#endif
+
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 
 #if defined(STM32F0)

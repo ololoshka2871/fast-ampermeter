@@ -26,7 +26,7 @@ static DMA_HandleTypeDef hdma_rx{
      DMA_PDATAALIGN_BYTE, DMA_MDATAALIGN_BYTE, DMA_NORMAL, DMA_PRIORITY_HIGH}};
 
 I2C_HandleTypeDef i2c1{I2C1,
-                       {0x00100203, // сгенерировано кубом
+                       {0x2010091A, // сгенерировано кубом
                         0, I2C_ADDRESSINGMODE_7BIT, I2C_DUALADDRESS_DISABLE, 0,
                         I2C_OA2_NOMASK, I2C_GENERALCALL_DISABLE,
                         I2C_NOSTRETCH_DISABLE}};
@@ -68,12 +68,12 @@ static Result<void, HAL_StatusTypeDef> init_DMA(I2C_HandleTypeDef &i2c) {
 
 static Result<I2C_HandleTypeDef *, HAL_StatusTypeDef> init_I2C() {
   RCC_PeriphCLKInitTypeDef PeriphClkInit{
-      RCC_PERIPHCLK_USB | RCC_PERIPHCLK_I2C1,
+      RCC_PERIPHCLK_I2C1,
       0,                        // RTC
       0,                        // USART1
       RCC_I2C1CLKSOURCE_SYSCLK, // i2c1
       0,                        // HDMI CEC
-      RCC_USBCLKSOURCE_HSI48,   // USB
+      0,                        // USB
   };
 
   HAL_StatusTypeDef res;
@@ -116,6 +116,6 @@ int main(void) {
 
   while (true) {
     reader.pool();
-    __asm__("wfi");
+    //__asm__("wfi");
   }
 }
