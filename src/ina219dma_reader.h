@@ -45,7 +45,8 @@ public:
     float ShuntVoltage, BusVoltage, Power, Current;
   };
 
-  using callback_t = std::function<void(Result<Values, HAL_StatusTypeDef>)>;
+  using callback_t = std::function<void(Result<Values, HAL_StatusTypeDef>,
+                                        INA219DMA_Reader &)>;
   using DMA_inicialisator_t =
       std::function<Result<void, HAL_StatusTypeDef>(I2C_HandleTypeDef &)>;
 

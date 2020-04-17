@@ -31,6 +31,16 @@ I2C_HandleTypeDef i2c1{I2C1,
                         I2C_OA2_NOMASK, I2C_GENERALCALL_DISABLE,
                         I2C_NOSTRETCH_DISABLE}};
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static void
+result_read_cb(Result<INA219DMA_Reader::Values, HAL_StatusTypeDef> r,
+               INA219DMA_Reader &reader) {
+  reader.update(result_read_cb);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static Result<void, HAL_StatusTypeDef> init_DMA(I2C_HandleTypeDef &i2c) {
   HAL_StatusTypeDef res;
 
@@ -104,18 +114,10 @@ int main(void) {
 
   INA219DMA_Reader reader(std::move(ina219), init_DMA);
 
-  volatile float I, V;
-
-  auto res = reader.update(
-      [&I, &V](Result<INA219DMA_Reader::Values, HAL_StatusTypeDef> r) {
-        auto _r = r.unwrap();
-        I = _r.Current;
-        V = _r.BusVoltage;
-      });
-  assert(res == HAL_OK);
+  auto res = reader.update(result_read_cb);
 
   while (true) {
     reader.pool();
-    //__asm__("wfi");
+    __asm__("wfi");
   }
 }

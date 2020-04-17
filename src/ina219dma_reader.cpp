@@ -99,6 +99,7 @@ INA219DMA_Reader::update(INA219DMA_Reader::callback_t callback) {
   }
   this->callback = callback;
   start();
+  pool();
   return HAL_OK;
 }
 
@@ -111,10 +112,10 @@ void INA219DMA_Reader::pool() {
     Start_reading_data();
     break;
   case END:
-    if (callback) {
-      callback(format_result());
-    }
     state = READY;
+    if (callback) {
+      callback(format_result(), *this);
+    }
     break;
   default:
     break;
