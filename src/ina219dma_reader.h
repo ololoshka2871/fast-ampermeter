@@ -42,7 +42,17 @@ public:
   };
 
   struct Values {
-    float ShuntVoltage, BusVoltage, Power, Current;
+
+    Values(const RawValues &raw_values, const INA219 &device);
+
+    float ShuntVoltage() const;
+    float BusVoltage() const;
+    float Power() const;
+    float Current() const;
+
+  private:
+    const RawValues &raw_values;
+    const INA219 &device;
   };
 
   using callback_t = std::function<void(Result<Values, HAL_StatusTypeDef>,

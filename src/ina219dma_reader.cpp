@@ -127,7 +127,8 @@ INA219DMA_Reader::format_result() const {
   if (errorStatus != HAL_OK) {
     return Err(errorStatus);
   } else {
-    return Ok(Values{
+    return Ok(Values(storage, ina219)
+    /*{
         INA219::shunt_voltage_from_raw(
             INA219::convert_u16tos16(storage._s.ShuntVoltage_cell_as_LE())),
         INA219::voltage_from_raw(
@@ -136,7 +137,7 @@ INA219DMA_Reader::format_result() const {
             INA219::convert_u16tos16(storage._s.Power_cell_as_LE())),
         ina219.current_from_raw(
             INA219::convert_u16tos16(storage._s.Current_cell_as_LE())),
-    });
+    }*/);
   }
 }
 
@@ -146,4 +147,28 @@ void INA219DMA_Reader::start() {
   errorStatus = HAL_OK;
 
   ina219.getBus().ErrorCallback = DMAError;
+}
+
+INA219DMA_Reader::Values::Values(const INA219DMA_Reader::RawValues &raw_values,
+                                 const INA219 &device)
+    : raw_values(raw_values), device(device) {}
+
+float INA219DMA_Reader::Values::ShuntVoltage() const {
+  return INA219::shunt_voltage_from_raw(
+      INA219::convert_u16tos16(raw_values._s.ShuntVoltage_cell_as_LE()));
+}
+
+float INA219DMA_Reader::Values::BusVoltage() const {
+  return INA219::voltage_from_raw(
+      INA219::voltage_raw(raw_values._s.BusVoltage_cell_as_LE()));
+}
+
+float INA219DMA_Reader::Values::Power() const {
+  return device.power_from_raw(
+      INA219::convert_u16tos16(raw_values._s.Power_cell_as_LE()));
+}
+
+float INA219DMA_Reader::Values::Current() const {
+  return device.current_from_raw(
+      INA219::convert_u16tos16(raw_values._s.Current_cell_as_LE()));
 }

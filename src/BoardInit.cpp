@@ -355,6 +355,24 @@ void Configure_AHB_Clocks() {
 
 #if defined(STM32F0) && (HSE_VALUE <= 0)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI48;
+
+  /*Configure the clock recovery system (CRS)**********************************/
+
+  /*Enable CRS Clock*/
+  __HAL_RCC_CRS_CLK_ENABLE();
+
+  RCC_CRSInitTypeDef RCC_CRSInitStruct{
+      RCC_CRS_SYNC_DIV1, // Default Synchro Signal division factor (not divided)
+      RCC_CRS_SYNC_SOURCE_USB, // Set the SYNCSRC[1:0] bits according to
+                               // CRS_Source value
+      __HAL_RCC_CRS_RELOADVALUE_CALCULATE(
+          USB_FREQ, 1000), // HSI48 is synchronized with USB SOF at 1KHz rate
+      RCC_CRS_ERRORLIMIT_DEFAULT,
+      0x20, // Set the TRIM[5:0] to the default value
+  };
+
+  /* Start automatic synchronization */
+  HAL_RCCEx_CRSConfig(&RCC_CRSInitStruct);
 #else
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 #endif

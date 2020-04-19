@@ -17,6 +17,16 @@ set(BOOTLOADER_SRC
 
     ina219dma_reader.cpp
     ina219dma_reader.h
+
+    usb_cdc_interface.h
+    usb_cdc_interface.c
+
+    usbd_desc.h
+    usbd_desc.c
+    usbd_conf.c
+
+    cdc_acm.h
+    cdc_acm.cpp
 )
 
 if(STM32_FAMILY STREQUAL "F0")
@@ -59,6 +69,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
         HAL
     -Wl,--no-whole-archive
     result
+    USB
 )
 
 function(show_object_size target)

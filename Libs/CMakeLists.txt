@@ -47,8 +47,8 @@ SET(HAL_SRC
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_nand.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_nor.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_pccard.c
-#    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_pcd.c
-#    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_pcd_ex.c
+    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_pcd.c
+    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_pcd_ex.c
     ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_pwr.c
     ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_pwr_ex.c
     ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_rcc.c
@@ -82,7 +82,7 @@ SET(HAL_SRC
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_spi.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_tim.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_usart.c
-#    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_usb.c
+    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_usb.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_utils.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32/system_${STM32_FAMILY_LONG_lx}.c
@@ -108,6 +108,35 @@ endif()
 
 target_compile_definitions(HAL PUBLIC
     -DUSE_HAL_I2C_REGISTER_CALLBACKS=1
+    #-DUSE_HAL_PCD_REGISTER_CALLBACKS=1
+)
+
+###################
+# USB
+###################
+
+set(USB_BASE_DIR ${STM32Cube}/Middlewares/ST/STM32_USB_Device_Library)
+set(USB_CORE_DIR ${USB_BASE_DIR}/Core)
+set(USB_CRC_ACM_DIR ${USB_BASE_DIR}/Class/CDC)
+
+set(USB_SRC
+    # ${USB_CORE_DIR}/Src/usbd_conf_template.c
+    ${USB_CORE_DIR}/Src/usbd_core.c
+    ${USB_CORE_DIR}/Src/usbd_ctlreq.c
+    # ${USB_CORE_DIR}/Src/usbd_desc_template.c
+    ${USB_CORE_DIR}/Src/usbd_ioreq.c
+
+    ${USB_CRC_ACM_DIR}/Src/usbd_cdc.c
+)
+
+ADD_LIBRARY(USB STATIC ${USB_SRC})
+target_include_directories(USB PUBLIC
+    ${USB_CORE_DIR}/Inc
+    ${USB_CRC_ACM_DIR}/Inc
+)
+
+target_link_libraries(USB PUBLIC
+    HAL
 )
 
 ###################

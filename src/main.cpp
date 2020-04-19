@@ -7,13 +7,13 @@
 
 #include "hw_includes.h"
 
-#include "result.h"
-
 #include "BoardInit.h"
 #include "Debug.h"
 
 #include "ina219.h"
 #include "ina219dma_reader.h"
+
+#include "cdc_acm.h"
 
 static DMA_HandleTypeDef hdma_tx{
     DMA1_Channel2,
@@ -106,8 +106,9 @@ static Result<I2C_HandleTypeDef *, HAL_StatusTypeDef> init_I2C() {
  * \return Never
  */
 int main(void) {
-
   InitBoard();
+
+  CDC_ACM::init();
 
   INA219 ina219{*init_I2C().unwrap(), INA219::DEFAULT_ADDRESS, 10};
   ina219.start(INA219::MAX_16V, 0.4f, 0.3f);
@@ -115,9 +116,14 @@ int main(void) {
   INA219DMA_Reader reader(std::move(ina219), init_DMA);
 
   auto res = reader.update(result_read_cb);
+  assert(res == HAL_OK);
 
   while (true) {
     reader.pool();
+    auto rxData = CDC_ACM::tryReadData();
+    if (rxData.size()) {
+    }
+
     __asm__("wfi");
   }
 }
