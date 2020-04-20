@@ -38,4 +38,4 @@ CDC_ACM::RxData::~RxData() {
   }
 }
 
-constexpr uint8_t *CDC_ACM::RxData::pData() const { return UserRxBuffer; }
+uint8_t *CDC_ACM::RxData::pData() const { return UserRxBuffer; }

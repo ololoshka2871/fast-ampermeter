@@ -15,6 +15,11 @@
 
 #include "cdc_acm.h"
 
+#include "rxmessagereader.h"
+#include "txmessagewriter.h"
+
+#include "protocol.pb.h"
+
 static DMA_HandleTypeDef hdma_tx{
     DMA1_Channel2,
     {DMA_MEMORY_TO_PERIPH, DMA_PINC_DISABLE, DMA_MINC_ENABLE,
@@ -38,6 +43,9 @@ result_read_cb(Result<INA219DMA_Reader::Values, HAL_StatusTypeDef> r,
                INA219DMA_Reader &reader) {
   reader.update(result_read_cb);
 }
+
+template <typename RxMessage, typename TxMessage>
+static void process_message(const RxMessage &req, TxMessage &resp) {}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -118,12 +126,23 @@ int main(void) {
   auto res = reader.update(result_read_cb);
   assert(res == HAL_OK);
 
-  while (true) {
+  auto waiter = [&reader]() {
     reader.pool();
-    auto rxData = CDC_ACM::tryReadData();
-    if (rxData.size()) {
-    }
-
     __asm__("wfi");
+  };
+
+  ru_sktbelpa_fast_freqmeter_Request req;
+  ru_sktbelpa_fast_freqmeter_Response resp;
+
+  RxMessageReader cmd_reader;
+  TxMessageWriter<ru_sktbelpa_fast_freqmeter_Response/*,
+                  ru_sktbelpa_fast_freqmeter_Response_fields*/>
+      resp_writer;
+  while (true) {
+    cmd_reader.read(req, ru_sktbelpa_fast_freqmeter_Request_fields,
+                    ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
+    process_message<ru_sktbelpa_fast_freqmeter_Request,
+                    ru_sktbelpa_fast_freqmeter_Response>(req, resp);
+    resp_writer.write(resp, waiter);
   }
 }

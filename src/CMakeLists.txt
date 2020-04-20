@@ -27,6 +27,15 @@ set(BOOTLOADER_SRC
 
     cdc_acm.h
     cdc_acm.cpp
+
+    protocol.h
+    protocol.cpp
+
+    rxmessagereader.h
+    rxmessagereader.cpp
+
+    txmessagewriter.h
+    txmessagewriter.cpp
 )
 
 if(STM32_FAMILY STREQUAL "F0")
@@ -70,6 +79,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     -Wl,--no-whole-archive
     result
     USB
+    nanopb
 )
 
 function(show_object_size target)

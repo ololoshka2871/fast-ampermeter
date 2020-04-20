@@ -12,3 +12,6 @@
 [submodule "Libs/mbedtls"]
 	path = Libs/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "Libs/nanopb/nanopb-dist"]
+	path = Libs/nanopb/nanopb-dist
+	url = https://github.com/nanopb/nanopb.git
