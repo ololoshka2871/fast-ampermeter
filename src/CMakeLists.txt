@@ -28,9 +28,6 @@ set(BOOTLOADER_SRC
     cdc_acm.h
     cdc_acm.cpp
 
-    protocol.h
-    protocol.cpp
-
     rxmessagereader.h
     rxmessagereader.cpp
 

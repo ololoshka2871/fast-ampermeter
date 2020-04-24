@@ -45,7 +45,12 @@ result_read_cb(Result<INA219DMA_Reader::Values, HAL_StatusTypeDef> r,
 }
 
 template <typename RxMessage, typename TxMessage>
-static void process_message(const RxMessage &req, TxMessage &resp) {}
+static void process_message(const RxMessage &req, TxMessage &resp) {
+  resp.id = req.id;
+  resp.deviceID = ru_sktbelpa_fast_freqmeter_INFO_FAST_AMPERMETER_ID;
+  resp.protocolVersion = ru_sktbelpa_fast_freqmeter_INFO_PROTOCOL_VERSION;
+  resp.Global_status = ru_sktbelpa_fast_freqmeter_STATUS_OK;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -131,18 +136,17 @@ int main(void) {
     __asm__("wfi");
   };
 
-  ru_sktbelpa_fast_freqmeter_Request req;
-  ru_sktbelpa_fast_freqmeter_Response resp;
+  ru_sktbelpa_fast_freqmeter_Request req{};
+  ru_sktbelpa_fast_freqmeter_Response resp{};
 
   RxMessageReader cmd_reader;
-  TxMessageWriter<ru_sktbelpa_fast_freqmeter_Response/*,
-                  ru_sktbelpa_fast_freqmeter_Response_fields*/>
-      resp_writer;
+  TxMessageWriter resp_writer;
   while (true) {
     cmd_reader.read(req, ru_sktbelpa_fast_freqmeter_Request_fields,
                     ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
     process_message<ru_sktbelpa_fast_freqmeter_Request,
                     ru_sktbelpa_fast_freqmeter_Response>(req, resp);
-    resp_writer.write(resp, waiter);
+    resp_writer.write(resp, ru_sktbelpa_fast_freqmeter_Response_fields,
+                      ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
   }
 }

@@ -14,7 +14,6 @@ USBD_CDC_LineCodingTypeDef LineCoding = {
 };
 
 uint8_t UserRxBuffer[CDC_DATA_FS_MAX_PACKET_SIZE];
-uint8_t UserTxBuffer[CDC_DATA_FS_MAX_PACKET_SIZE];
 
 /* USB handler declaration */
 USBD_HandleTypeDef USBD_Device;
@@ -37,7 +36,7 @@ USBD_CDC_ItfTypeDef USBD_CDC_fops = {CDC_Itf_Init, CDC_Itf_DeInit,
  * USBD_FAIL
  */
 static int8_t CDC_Itf_Init(void) {
-  USBD_CDC_SetTxBuffer(&USBD_Device, UserTxBuffer, 0);
+  // USBD_CDC_SetTxBuffer(&USBD_Device, UserTxBuffer, 0);
   USBD_CDC_SetRxBuffer(&USBD_Device, UserRxBuffer);
   return (USBD_OK);
 }

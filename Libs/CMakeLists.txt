@@ -151,6 +151,7 @@ target_include_directories(result INTERFACE result)
 ###################
 
 add_subdirectory(nanopb)
+set(PROTOBUF_PROTO_FILE ${PROTOBUF_PROTO_FILE} PARENT_SCOPE)
 
 
 SET(LIBS_DIR            ${CMAKE_CURRENT_SOURCE_DIR}             PARENT_SCOPE)

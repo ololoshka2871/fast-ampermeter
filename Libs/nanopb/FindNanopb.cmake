@@ -209,8 +209,6 @@ function(NANOPB_GENERATE_CPP SRCS HDRS)
       set(FIL_PATH_REL ".")
     endif()
 
-    message(STATUS ">>> ${_nanopb_include_path}")
-
     list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_PATH_REL}/${FIL_WE}.pb.c")
     list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_PATH_REL}/${FIL_WE}.pb.h")
 
