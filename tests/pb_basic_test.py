@@ -26,10 +26,26 @@ def device(request):
     request.addfinalizer(fin)
     return d
 
-def test_sdfsd(device):
+def basic_check(resp):
+    assert resp is not None
+    assert resp.deviceID == protocol_pb2.INFO.FAST_AMPERMETER_ID
+    assert resp.Global_status == protocol_pb2.STATUS.OK
+
+
+def test_ping(device):
     request = libfast_ampermeter.Fast_ampermeter_requestBuilder.build_ping_request()
 
     resp = device.process_request_sync(request)
 
-    assert resp is not None
-    assert resp.deviceID == protocol_pb2.INFO.FAST_AMPERMETER_ID
+    basic_check(resp)
+
+
+def test_read_last_measure(device):
+    request = libfast_ampermeter.Fast_ampermeter_requestBuilder.build_last_measure_request()
+
+    resp = device.process_request_sync(request)
+    basic_check(resp)
+
+    assert resp.HasField('lastMeasure')
+    lm = resp.lastMeasure
+    assert lm.number > 0

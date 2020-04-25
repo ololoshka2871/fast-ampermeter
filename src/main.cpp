@@ -18,7 +18,11 @@
 #include "rxmessagereader.h"
 #include "txmessagewriter.h"
 
+#include "history.h"
+
 #include "protocol.pb.h"
+
+static History<5> history;
 
 static DMA_HandleTypeDef hdma_tx{
     DMA1_Channel2,
@@ -41,7 +45,50 @@ I2C_HandleTypeDef i2c1{I2C1,
 static void
 result_read_cb(Result<INA219DMA_Reader::Values, HAL_StatusTypeDef> r,
                INA219DMA_Reader &reader) {
+  static int64_t counter = 0;
+
+  if (r.isOk()) {
+    auto uwr = r.unwrap();
+    history.add(counter, uwr.BusVoltage(), uwr.Current());
+    ++counter;
+  }
+
   reader.update(result_read_cb);
+}
+
+template <typename TxMessage> static void writeLastMeasure(TxMessage &resp) {
+  const auto lastMeasure = history.getLastMeasure();
+  resp.number = lastMeasure.first;
+  resp.voltage = lastMeasure.second->voltage;
+  resp.current = lastMeasure.second->current;
+}
+
+template <typename Treq, typename TxMessage>
+static void writeMeasureHistory(const Treq &req, TxMessage &resp) {
+
+  auto history_start = history.start();
+  auto history_elements = history.elements();
+
+  if (req.has_from) {
+    resp.FirstElementNumber = std::max(history_start, req.from);
+  } else {
+    resp.FirstElementNumber = history_start;
+  }
+
+  auto elements_to_read = std::min(history_elements, req.count);
+
+  resp.HistoryElements.funcs.encode = [](pb_ostream_t *stream,
+                                         const pb_field_t *field,
+                                         void *const *arg) -> bool {
+    auto pElements_to_read = *reinterpret_cast<size_t *const *>(arg);
+    auto result = *pElements_to_read > 0;
+
+    // TODO
+
+    (*pElements_to_read)--;
+    return result;
+  };
+  resp.HistoryElements.arg = reinterpret_cast<void *>(elements_to_read);
 }
 
 template <typename RxMessage, typename TxMessage>
@@ -50,6 +97,16 @@ static void process_message(const RxMessage &req, TxMessage &resp) {
   resp.deviceID = ru_sktbelpa_fast_freqmeter_INFO_FAST_AMPERMETER_ID;
   resp.protocolVersion = ru_sktbelpa_fast_freqmeter_INFO_PROTOCOL_VERSION;
   resp.Global_status = ru_sktbelpa_fast_freqmeter_STATUS_OK;
+
+  if (req.has_lastMeasureRequest) {
+    resp.has_lastMeasure = true;
+    writeLastMeasure(resp.lastMeasure);
+  }
+
+  if (req.has_getMeasureHistory) {
+    resp.has_measureHistory = true;
+    writeMeasureHistory(req.getMeasureHistory, resp.measureHistory);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -81,10 +81,10 @@ message LastMeasureRequest {}
 // Зпрос истории измерений
 message GetMeasureHistory {
     // Начать чтение истории с номера
-    optional uint64             from = 1;
+    optional int64             from = 1;
 
     // прочитать не более count элементов истории
-    optional uint32             count = 2;
+    optional int32             count = 2;
 }
 
 // Измерение
@@ -101,7 +101,7 @@ message SingleMeasure {
 
 message MeasureHistory {
     // порядковый номер первого самого старого из измерений в истории
-    required uint64             FirstElementNumber = 1;
+    required int64             FirstElementNumber = 1;
 
     // Элементы истории
     repeated SingleMeasure      HistoryElements = 2;

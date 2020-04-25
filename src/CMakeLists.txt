@@ -33,6 +33,8 @@ set(BOOTLOADER_SRC
 
     txmessagewriter.h
     txmessagewriter.cpp
+
+    history.h
 )
 
 if(STM32_FAMILY STREQUAL "F0")

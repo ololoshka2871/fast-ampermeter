@@ -34,6 +34,19 @@ class Fast_ampermeter_requestBuilder:
         """
         return Fast_ampermeter_requestBuilder.build_request()
 
+    @staticmethod
+    def build_last_measure_request():
+        """
+        Создаёт запрос чтения последнего измерения
+
+        :return: объект типа protocol_pb2.Request
+        """
+        req = Fast_ampermeter_requestBuilder.build_request()
+
+        req.lastMeasureRequest.CopyFrom(protocol_pb2.LastMeasureRequest())
+
+        return req
+
 
 
 class Fast_ampermater_io:
