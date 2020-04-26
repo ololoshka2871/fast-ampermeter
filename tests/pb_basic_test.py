@@ -49,3 +49,15 @@ def test_read_last_measure(device):
     assert resp.HasField('lastMeasure')
     lm = resp.lastMeasure
     assert lm.number > 0
+
+
+def test_read_all_fistory(device):
+    request = libfast_ampermeter.Fast_ampermeter_requestBuilder.build_measure_history_request()
+
+    r = protocol_pb2.Request()
+    r.ParseFromString(request.SerializeToString())
+
+    resp = device.process_request_sync(request)
+    basic_check(resp)
+
+    assert resp.HasField('measureHistory')

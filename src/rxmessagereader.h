@@ -28,7 +28,7 @@ struct RxMessageReader {
         auto size = getActualMessageSize(&input_stream);
         if (size > 10 && size < 100) {
           input_stream.bytes_left = size;
-          if (pb_decode_noinit(&input_stream, fields, &msg)) {
+          if (pb_decode(&input_stream, fields, &msg)) {
             break;
           }
         }

@@ -21,8 +21,8 @@ class Fast_ampermeter_requestBuilder:
         """
         req = protocol_pb2.Request()
         req.id = random.randrange(0xffffffff)
-        req.protocolVersion = protocol_pb2.INFO.Value('PROTOCOL_VERSION')
-        req.deviceID = protocol_pb2.INFO.Value('ID_DISCOVER')
+        req.protocolVersion = protocol_pb2.INFO.PROTOCOL_VERSION
+        req.deviceID = protocol_pb2.INFO.ID_DISCOVER
         return req
 
     @staticmethod
@@ -44,6 +44,27 @@ class Fast_ampermeter_requestBuilder:
         req = Fast_ampermeter_requestBuilder.build_request()
 
         req.lastMeasureRequest.CopyFrom(protocol_pb2.LastMeasureRequest())
+
+        return req
+
+    @staticmethod
+    def build_measure_history_request(start=None, max_count=None):
+        """
+        Создаёт запрос чтения истории измерений
+
+        :return: объект типа protocol_pb2.Request
+        """
+        req = Fast_ampermeter_requestBuilder.build_request()
+
+        rq = protocol_pb2.GetMeasureHistory()
+
+        if start:
+            rq.from_element = start
+
+        if max_count:
+            rq.count = max_count
+
+        req.getMeasureHistory.CopyFrom(rq)
 
         return req
 

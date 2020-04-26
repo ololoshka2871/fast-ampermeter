@@ -24,6 +24,8 @@
 
 static History<5> history;
 
+static int64_t hrp = 0;
+
 static DMA_HandleTypeDef hdma_tx{
     DMA1_Channel2,
     {DMA_MEMORY_TO_PERIPH, DMA_PINC_DISABLE, DMA_MINC_ENABLE,
@@ -63,31 +65,45 @@ template <typename TxMessage> static void writeLastMeasure(TxMessage &resp) {
   resp.current = lastMeasure.second->current;
 }
 
+// колбэк ДОЛЖЕН зависеть ТОЛЬКО от arg
+static bool encode_history_item(pb_ostream_t *stream, const pb_field_t *field,
+                                void *const *arg) {
+  auto elements_to_read = *reinterpret_cast<const size_t *>(arg);
+
+  auto stop = hrp + elements_to_read;
+
+  ru_sktbelpa_fast_freqmeter_SingleMeasure item{};
+  for (; hrp < stop; ++hrp) {
+    auto res = history.read(hrp);
+
+    item.number = hrp;
+    item.voltage += res->voltage;
+    item.current += res->current;
+
+    if (!pb_encode_tag_for_field(stream, field)) {
+      return false;
+    }
+
+    if (!pb_encode_submessage(stream, field->submsg_desc, &item)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 template <typename Treq, typename TxMessage>
 static void writeMeasureHistory(const Treq &req, TxMessage &resp) {
 
   auto history_start = history.start();
   auto history_elements = history.elements();
 
-  if (req.has_from) {
-    resp.FirstElementNumber = std::max(history_start, req.from);
-  } else {
-    resp.FirstElementNumber = history_start;
-  }
+  hrp = req.has_from_element ? std::max(history_start, req.from_element)
+                             : history_start;
 
-  auto elements_to_read = std::min(history_elements, req.count);
+  auto elements_to_read =
+      req.has_count ? std::min(history_elements, req.count) : history_elements;
 
-  resp.HistoryElements.funcs.encode = [](pb_ostream_t *stream,
-                                         const pb_field_t *field,
-                                         void *const *arg) -> bool {
-    auto pElements_to_read = *reinterpret_cast<size_t *const *>(arg);
-    auto result = *pElements_to_read > 0;
-
-    // TODO
-
-    (*pElements_to_read)--;
-    return result;
-  };
+  resp.HistoryElements.funcs.encode = encode_history_item;
   resp.HistoryElements.arg = reinterpret_cast<void *>(elements_to_read);
 }
 
@@ -98,13 +114,14 @@ static void process_message(const RxMessage &req, TxMessage &resp) {
   resp.protocolVersion = ru_sktbelpa_fast_freqmeter_INFO_PROTOCOL_VERSION;
   resp.Global_status = ru_sktbelpa_fast_freqmeter_STATUS_OK;
 
-  if (req.has_lastMeasureRequest) {
-    resp.has_lastMeasure = true;
+  // Т.К resp не перенинициализируется с прошлого раза, то нужно вручную
+  // обновлять флаги has_*
+
+  if ((resp.has_lastMeasure = req.has_lastMeasureRequest)) {
     writeLastMeasure(resp.lastMeasure);
   }
 
-  if (req.has_getMeasureHistory) {
-    resp.has_measureHistory = true;
+  if ((resp.has_measureHistory = req.has_getMeasureHistory)) {
     writeMeasureHistory(req.getMeasureHistory, resp.measureHistory);
   }
 }
