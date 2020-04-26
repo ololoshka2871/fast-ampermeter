@@ -22,9 +22,16 @@
 
 #include "protocol.pb.h"
 
-static History<5> history;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static int64_t hrp = 0;
+struct HistoryWriterConfig {
+  int64_t start;
+  size_t count;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static History<5> history;
 
 static DMA_HandleTypeDef hdma_tx{
     DMA1_Channel2,
@@ -65,50 +72,40 @@ template <typename TxMessage> static void writeLastMeasure(TxMessage &resp) {
   resp.current = lastMeasure.second->current;
 }
 
-// колбэк ДОЛЖЕН зависеть ТОЛЬКО от arg
-static bool encode_history_item(pb_ostream_t *stream, const pb_field_t *field,
-                                void *const *arg) {
-  auto elements_to_read = *reinterpret_cast<const size_t *>(arg);
-
-  auto stop = hrp + elements_to_read;
-
-  ru_sktbelpa_fast_freqmeter_SingleMeasure item{};
-  for (; hrp < stop; ++hrp) {
-    auto res = history.read(hrp);
-
-    item.number = hrp;
-    item.voltage += res->voltage;
-    item.current += res->current;
-
-    if (!pb_encode_tag_for_field(stream, field)) {
-      return false;
-    }
-
-    if (!pb_encode_submessage(stream, field->submsg_desc, &item)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-template <typename Treq, typename TxMessage>
-static void writeMeasureHistory(const Treq &req, TxMessage &resp) {
-
+template <typename Treq, typename TxMessage, typename Thwc>
+static void writeMeasureHistory(const Treq &req, TxMessage &resp, Thwc &hwc) {
   auto history_start = history.start();
   auto history_elements = history.elements();
 
-  hrp = req.has_from_element ? std::max(history_start, req.from_element)
-                             : history_start;
+  hwc.start = req.has_from_element ? std::max(history_start, req.from_element)
+                                   : history_start;
 
-  auto elements_to_read =
+  hwc.count =
       req.has_count ? std::min(history_elements, req.count) : history_elements;
 
-  resp.HistoryElements.funcs.encode = encode_history_item;
-  resp.HistoryElements.arg = reinterpret_cast<void *>(elements_to_read);
+  resp.HistoryElements.arg = &hwc;
+  // колбэк ДОЛЖЕН зависеть ТОЛЬКО от arg
+  resp.HistoryElements.funcs.encode =
+      [](pb_ostream_t *stream, const pb_field_t *field, void *const *arg) {
+        auto config = *reinterpret_cast<const HistoryWriterConfig *>(*arg);
+
+        for (auto N = config.start; N < config.start + config.count; ++N) {
+          auto res = history.read(N);
+          ru_sktbelpa_fast_freqmeter_SingleMeasure item{N, res.voltage,
+                                                        res.current};
+          if (!pb_encode_tag_for_field(stream, field)) {
+            return false;
+          }
+          if (!pb_encode_submessage(stream, field->submsg_desc, &item)) {
+            return false;
+          }
+        }
+        return true;
+      };
 }
 
-template <typename RxMessage, typename TxMessage>
-static void process_message(const RxMessage &req, TxMessage &resp) {
+template <typename RxMessage, typename TxMessage, typename Thwc>
+static void process_message(const RxMessage &req, TxMessage &resp, Thwc &hwc) {
   resp.id = req.id;
   resp.deviceID = ru_sktbelpa_fast_freqmeter_INFO_FAST_AMPERMETER_ID;
   resp.protocolVersion = ru_sktbelpa_fast_freqmeter_INFO_PROTOCOL_VERSION;
@@ -122,7 +119,7 @@ static void process_message(const RxMessage &req, TxMessage &resp) {
   }
 
   if ((resp.has_measureHistory = req.has_getMeasureHistory)) {
-    writeMeasureHistory(req.getMeasureHistory, resp.measureHistory);
+    writeMeasureHistory(req.getMeasureHistory, resp.measureHistory, hwc);
   }
 }
 
@@ -216,10 +213,13 @@ int main(void) {
   RxMessageReader cmd_reader;
   TxMessageWriter resp_writer;
   while (true) {
+    HistoryWriterConfig historyWriterConfig;
+
     cmd_reader.read(req, ru_sktbelpa_fast_freqmeter_Request_fields,
                     ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
     process_message<ru_sktbelpa_fast_freqmeter_Request,
-                    ru_sktbelpa_fast_freqmeter_Response>(req, resp);
+                    ru_sktbelpa_fast_freqmeter_Response>(req, resp,
+                                                         historyWriterConfig);
     resp_writer.write(resp, ru_sktbelpa_fast_freqmeter_Response_fields,
                       ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
   }

@@ -72,16 +72,16 @@ class Fast_ampermeter_requestBuilder:
 
 class Fast_ampermater_io:
     """Класс для простого доступа к Fast-ampermeter использованием google protocol buffers"""
-    def __init__(self, port):
+    def __init__(self, port, timeout=1):
         """
         Конструктор
 
         :param port: COM-Порт к которому будет произведено подключение
         """
         self.port = port
-        self.base_timeout = 1  # сек
+        self.base_timeout = timeout  # сек
 
-        self.ser = serial.Serial(port)
+        self.ser = serial.Serial(port, timeout=timeout)
         self.isConnected = True
 
     def __str__(self):
@@ -114,7 +114,7 @@ class Fast_ampermater_io:
 
         self.ser.close()
 
-    def process_request_sync(self, request, timeout_sec=1):
+    def process_request_sync(self, request, timeout_sec=-1):
         """
         Синхронный обработчик запроса (блокирет вызвавший поток до получения ответа или до истечения таймаута)
 
@@ -125,7 +125,7 @@ class Fast_ampermater_io:
         if not (type(request) is protocol_pb2.Request):
             raise TypeError('"request" mast be instance of "protocol_pb2.Request"')
 
-        return self.process_request_common(request, timeout_sec)
+        return self.process_request_common(request, timeout_sec if timeout_sec > 0 else self.base_timeout)
 
     def process_request_common(self, request, timeout_sec):
         self.ser.timeout = timeout_sec

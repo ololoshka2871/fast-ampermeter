@@ -26,6 +26,7 @@ def device(request):
     request.addfinalizer(fin)
     return d
 
+
 def basic_check(resp):
     assert resp is not None
     assert resp.deviceID == protocol_pb2.INFO.FAST_AMPERMETER_ID
@@ -51,7 +52,7 @@ def test_read_last_measure(device):
     assert lm.number > 0
 
 
-def test_read_all_fistory(device):
+def test_read_all_history(device):
     request = libfast_ampermeter.Fast_ampermeter_requestBuilder.build_measure_history_request()
 
     r = protocol_pb2.Request()
@@ -61,3 +62,17 @@ def test_read_all_fistory(device):
     basic_check(resp)
 
     assert resp.HasField('measureHistory')
+    assert len(resp.measureHistory.HistoryElements) == 5
+
+
+def test_read_1_history(device):
+    request = libfast_ampermeter.Fast_ampermeter_requestBuilder.build_measure_history_request(max_count=1)
+
+    r = protocol_pb2.Request()
+    r.ParseFromString(request.SerializeToString())
+
+    resp = device.process_request_sync(request)
+    basic_check(resp)
+
+    assert resp.HasField('measureHistory')
+    assert len(resp.measureHistory.HistoryElements) == 1

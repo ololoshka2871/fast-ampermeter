@@ -42,12 +42,12 @@ template <size_t size> struct History {
     return std::pair(0, &historyData[0]);
   }
 
-  const HistoryElement *read(int64_t pos) const {
+  const HistoryElement &read(int64_t pos) const {
     if ((pos > last_writen_element - 1) || (pos < last_writen_element - size)) {
-      return &HistoryElement::empty;
+      return HistoryElement::empty;
     }
     auto rp = (pos - 1) % size;
-    return &historyData[rp];
+    return historyData[rp];
   }
 
 private:
