@@ -50,16 +50,22 @@ CDC_ACM::RxData::~RxData() {
   }
 }
 
-uint8_t *CDC_ACM::RxData::pData() const { return UserRxBuffer; }
-
-void CDC_ACM::RxData::release() {
-  if (size()) {
-    buf_size = 0;
+CDC_ACM::RxData &CDC_ACM::RxData::operator=(CDC_ACM::RxData &&rr) {
+  if (!(size() == 0 && rr.size() != 0)) {
     release_buf();
   }
+  buf_size = rr.buf_size;
+  rr.buf_size = 0;
+  return *this;
 }
 
-void CDC_ACM::RxData::release_buf() { USBD_CDC_ReceivePacket(&USBD_Device); }
+uint8_t *CDC_ACM::RxData::pData() const { return UserRxBuffer; }
+
+void CDC_ACM::RxData::release_buf() {
+  std::memset(UserRxBuffer, 0,
+              sizeof(CDC_DATA_FS_MAX_PACKET_SIZE)); // FOR DEBUG
+  USBD_CDC_ReceivePacket(&USBD_Device);
+}
 
 bool CDC_ACM::TxBuffer::write(uint8_t byte) {
   if (isFull()) {

@@ -19,10 +19,6 @@ void RxMessageReader::readTo(uint8_t *&dest, size_t &count) {
   remaning -= to_read;
   dest += to_read;
   count -= to_read;
-
-  if (remaning == 0) {
-    RxDataBuf.release();
-  }
 }
 
 bool RxMessageReader::tryRefill() {

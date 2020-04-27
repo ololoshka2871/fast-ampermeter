@@ -81,7 +81,7 @@ class Fast_ampermater_io:
         self.port = port
         self.base_timeout = timeout  # сек
 
-        self.ser = serial.Serial(port, timeout=timeout)
+        self.ser = serial.Serial(port, timeout=timeout, write_timeout=timeout)
         self.isConnected = True
 
     def __str__(self):
@@ -140,21 +140,21 @@ class Fast_ampermater_io:
         response = protocol_pb2.Response()
 
         resp = self.ser.read(1024)
-        try:
-            _m, new_pos = _DecodeVarint32(resp, 0)
+        if len(resp) < 5:
+            raise RuntimeError('Empty response')
 
-            if _m != protocol_pb2.INFO.MAGICK:
-                return None
+        _m, new_pos = _DecodeVarint32(resp, 0)
 
-            msg_len, msg_offset = _DecodeVarint32(resp, new_pos)
+        if _m != protocol_pb2.INFO.MAGICK:
+            return RuntimeError('Protocol error')
 
-            resp = resp[msg_offset:msg_offset+msg_len]
-            response.ParseFromString(resp)
-        except Exception:
-            raise TimeoutError('Timeout')
+        msg_len, msg_offset = _DecodeVarint32(resp, new_pos)
+
+        resp = resp[msg_offset:msg_offset+msg_len]
+        response.ParseFromString(resp)
 
         if request.id != response.id:
-            return None
+            raise RuntimeError('Message sequence corrupt')
 
         return response
 

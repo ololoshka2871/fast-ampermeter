@@ -127,17 +127,7 @@ INA219DMA_Reader::format_result() const {
   if (errorStatus != HAL_OK) {
     return Err(errorStatus);
   } else {
-    return Ok(Values(storage, ina219)
-    /*{
-        INA219::shunt_voltage_from_raw(
-            INA219::convert_u16tos16(storage._s.ShuntVoltage_cell_as_LE())),
-        INA219::voltage_from_raw(
-            INA219::voltage_raw(storage._s.BusVoltage_cell_as_LE())),
-        ina219.power_from_raw(
-            INA219::convert_u16tos16(storage._s.Power_cell_as_LE())),
-        ina219.current_from_raw(
-            INA219::convert_u16tos16(storage._s.Current_cell_as_LE())),
-    }*/);
+    return Ok(Values(storage, ina219));
   }
 }
 

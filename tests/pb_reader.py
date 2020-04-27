@@ -34,9 +34,16 @@ def main():
     pattern = gen_pattern()
 
     while True:
-        start = time.time()
-        response = device.process_request_sync(request)
-        req_time = time.time()
+
+
+        try:
+            start = time.time()
+            response = device.process_request_sync(request)
+            req_time = time.time()
+        except:
+            continue
+
+
         if (not response) or response.Global_status != protocol_pb2.STATUS.Value('OK'):
             raise RuntimeError('Error {} during read values'.format(response.Global_status))
 

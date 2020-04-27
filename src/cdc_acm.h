@@ -15,16 +15,10 @@ public:
 
     ~RxData();
 
-    RxData &operator=(RxData &&rr) {
-      buf_size = rr.buf_size;
-      rr.buf_size = 0;
-      return *this;
-    }
+    RxData &operator=(RxData &&rr);
 
     uint8_t *pData() const;
     uint32_t size() const { return buf_size; }
-
-    void release();
 
   private:
     uint32_t buf_size;
