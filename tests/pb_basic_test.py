@@ -62,7 +62,7 @@ def test_read_all_history(device):
     basic_check(resp)
 
     assert resp.HasField('measureHistory')
-    assert len(resp.measureHistory.HistoryElements) == 5
+    assert len(resp.measureHistory.HistoryElements) == 32
 
 
 def test_read_1_history(device):

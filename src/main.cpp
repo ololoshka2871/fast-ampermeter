@@ -110,6 +110,7 @@ static void process_message(const RxMessage &req, TxMessage &resp, Thwc &hwc) {
   resp.deviceID = ru_sktbelpa_fast_freqmeter_INFO_FAST_AMPERMETER_ID;
   resp.protocolVersion = ru_sktbelpa_fast_freqmeter_INFO_PROTOCOL_VERSION;
   resp.Global_status = ru_sktbelpa_fast_freqmeter_STATUS_OK;
+  resp.timestamp = HAL_GetTick();
 
   // Т.К resp не перенинициализируется с прошлого раза, то нужно вручную
   // обновлять флаги has_*
@@ -217,10 +218,13 @@ int main(void) {
 
     cmd_reader.read(req, ru_sktbelpa_fast_freqmeter_Request_fields,
                     ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
-    process_message<ru_sktbelpa_fast_freqmeter_Request,
-                    ru_sktbelpa_fast_freqmeter_Response>(req, resp,
-                                                         historyWriterConfig);
-    resp_writer.write(resp, ru_sktbelpa_fast_freqmeter_Response_fields,
-                      ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
+    if ((req.deviceID == ru_sktbelpa_fast_freqmeter_INFO_FAST_AMPERMETER_ID) ||
+        (req.deviceID == ru_sktbelpa_fast_freqmeter_INFO_ID_DISCOVER)) {
+      process_message<ru_sktbelpa_fast_freqmeter_Request,
+                      ru_sktbelpa_fast_freqmeter_Response>(req, resp,
+                                                           historyWriterConfig);
+      resp_writer.write(resp, ru_sktbelpa_fast_freqmeter_Response_fields,
+                        ru_sktbelpa_fast_freqmeter_INFO_MAGICK, waiter);
+    }
   }
 }
