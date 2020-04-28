@@ -69,7 +69,7 @@ if (PROTOC_EXECUTABLE)
 
     find_package(NumPy)
     find_package(Matplotlib)
-    if (PYTHON_NUMPY_FOUND AND MATPLOTLIB_FOUND)
+    if (NUMPY_FOUND AND MATPLOTLIB_FOUND)
         add_custom_target(pb_plotter.run
             COMMAND
                 ${CMAKE_COMMAND} -E env "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}" ${PYTHON_EXECUTABLE} ${PB_PLOTTER}
@@ -79,7 +79,12 @@ if (PROTOC_EXECUTABLE)
                 ${CMAKE_CURRENT_BINARY_DIR}
             )
     else()
-        message(STATUS "'numpy' or 'matplotlib' not found, no plots avalable")
+        if (NOT PYTHON_NUMPY_FOUND)
+            message(STATUS "'numpy' not found, no plots avalable")
+        endif()
+        if (NOT MATPLOTLIB_FOUND)
+            message(STATUS "'matplotlib' not found, no plots avalable")
+        endif()
     endif()
 
     find_program(PYTEST NAMES py.test)

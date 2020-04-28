@@ -41,11 +41,9 @@ find_package(Nanopb REQUIRED)
 include_directories(${NANOPB_INCLUDE_DIRS})
 
 set(PROTOBUF_PROTO_FILE     protocol.proto)
-get_filename_component(PROTO_FILE ${PROTOBUF_PROTO_FILE} NAME_WE)
-set(PROTOBUF_OPTIONS_FILE   ${PROTO_FILE}.options)
 
 # fake target
-add_custom_target(protobuf_proto_def SOURCES ${PROTOBUF_PROTO_FILE} ${PROTOBUF_OPTIONS_FILE})
+add_custom_target(protobuf_proto_def SOURCES ${PROTOBUF_PROTO_FILE})
 
 nanopb_generate_cpp(PROTO_SRCS PROTO_HDRS
     ${PROTOBUF_PROTO_FILE}

@@ -15,3 +15,6 @@
 [submodule "Libs/nanopb/nanopb-dist"]
 	path = Libs/nanopb/nanopb-dist
 	url = https://github.com/nanopb/nanopb.git
+[submodule "Libs/nanopb/ru.sktbelpa.protobufobjects"]
+	path = Libs/nanopb/ru.sktbelpa.protobufobjects
+	url = https://Sctb_Elpa@bitbucket.org/Sctb_Elpa/ru.sktbelpa.protobufobjects.git
