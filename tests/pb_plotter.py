@@ -48,6 +48,8 @@ class Scope(object):
             self.v_data.append(item.voltage)
             self.I_data.append(item.current)
 
+        self.start_point = he[-1].number
+
         self.voltage_line.set_data(self.tdata, self.v_data)
         self.current_line.set_data(self.tdata, self.I_data)
 
