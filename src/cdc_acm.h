@@ -36,7 +36,7 @@ public:
     void send();
 
   private:
-    static uint8_t UserTxBuffer[CDC_DATA_FS_MAX_PACKET_SIZE];
+    static uint8_t *pUserTxBuffer;
     uint16_t writen;
   };
 

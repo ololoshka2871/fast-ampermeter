@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstring>
 
 #include "hw_includes.h"
@@ -8,9 +9,19 @@
 
 #include "usbd_desc.h"
 
+#include "protocol.pb.h"
+
 #include "usb_cdc_interface.h"
 
-uint8_t CDC_ACM::TxBuffer::UserTxBuffer[CDC_DATA_FS_MAX_PACKET_SIZE];
+static constexpr auto txBufSize =
+    std::min<size_t>(CDC_DATA_FS_MAX_PACKET_SIZE,
+                     ru_sktbelpa_fast_freqmeter_SingleMeasure_size
+                         *HISTORY_SIZE // Слишком много?
+    );
+
+static uint8_t UserTxBuffer[txBufSize];
+
+uint8_t *CDC_ACM::TxBuffer::pUserTxBuffer = UserTxBuffer;
 
 static CDC_ACM::TxBuffer txBuf;
 
@@ -61,37 +72,30 @@ CDC_ACM::RxData &CDC_ACM::RxData::operator=(CDC_ACM::RxData &&rr) {
 
 uint8_t *CDC_ACM::RxData::pData() const { return UserRxBuffer; }
 
-void CDC_ACM::RxData::release_buf() {
-  std::memset(UserRxBuffer, 0,
-              sizeof(CDC_DATA_FS_MAX_PACKET_SIZE)); // FOR DEBUG
-  USBD_CDC_ReceivePacket(&USBD_Device);
-}
+void CDC_ACM::RxData::release_buf() { USBD_CDC_ReceivePacket(&USBD_Device); }
 
 bool CDC_ACM::TxBuffer::write(uint8_t byte) {
   if (isFull()) {
     std::terminate();
   }
 
-  UserTxBuffer[writen++] = byte;
+  pUserTxBuffer[writen++] = byte;
   return isFull();
 }
 
 size_t CDC_ACM::TxBuffer::write(uint8_t *buf, size_t count) {
-  auto to_write =
-      std::min<size_t>(CDC_DATA_FS_MAX_PACKET_SIZE - 1 - writen, count);
+  auto to_write = std::min<size_t>(txBufSize - 1 - writen, count);
 
-  std::memcpy(&UserTxBuffer[writen], buf, to_write);
+  std::memcpy(&pUserTxBuffer[writen], buf, to_write);
   writen += to_write;
 
   return to_write;
 }
 
-bool CDC_ACM::TxBuffer::isFull() const {
-  return writen >= CDC_DATA_FS_MAX_PACKET_SIZE;
-}
+bool CDC_ACM::TxBuffer::isFull() const { return writen >= txBufSize; }
 
 void CDC_ACM::TxBuffer::send() {
-  USBD_CDC_SetTxBuffer(&USBD_Device, UserTxBuffer, writen);
+  USBD_CDC_SetTxBuffer(&USBD_Device, pUserTxBuffer, writen);
 
   USBD_CDC_TransmitPacket(&USBD_Device);
 

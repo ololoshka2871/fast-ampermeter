@@ -81,6 +81,10 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     nanopb
 )
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+    -DHISTORY_SIZE=${HISTORY_SIZE}
+)
+
 function(show_object_size target)
     string(REPLACE "objcopy" "size" CMAKE_OBJSIZE "${CMAKE_OBJCOPY}")
     add_custom_command(

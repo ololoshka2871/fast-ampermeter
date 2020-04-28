@@ -21,7 +21,7 @@ def gen_pattern():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--interval', '-i', type=float, help="Интервал опроса [c]", default=0.01)
+    parser.add_argument('--interval', '-i', type=float, help="Интервал опроса [c]", default=0.001)
     parser.add_argument('--port', '-p', type=str, help='Serial port', default='/dev/ttyACM0')
 
     args = parser.parse_args()
@@ -34,8 +34,6 @@ def main():
     pattern = gen_pattern()
 
     while True:
-
-
         try:
             start = time.time()
             response = device.process_request_sync(request)

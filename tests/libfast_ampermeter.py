@@ -125,11 +125,12 @@ class Fast_ampermater_io:
         if not (type(request) is protocol_pb2.Request):
             raise TypeError('"request" mast be instance of "protocol_pb2.Request"')
 
-        return self.process_request_common(request, timeout_sec if timeout_sec > 0 else self.base_timeout)
+        if timeout_sec > 0:
+            self.ser.timeout = timeout_sec
 
-    def process_request_common(self, request, timeout_sec):
-        self.ser.timeout = timeout_sec
+        return self.process_request_common(request)
 
+    def process_request_common(self, request):
         m = chr(protocol_pb2.INFO.MAGICK).encode()
 
         self.ser.write(m)

@@ -15,6 +15,9 @@ set(CLOCK_F_XTAL                        -1
 set(BUILD_USE_LTO                       FALSE
     CACHE BOOL "Use link-time optimisztion")
 
+set(HISTORY_SIZE                        32
+    CACHE BOOL "Use link-time optimisztion")
+
 set(DISABLE_SWO_OUTPUT                  TRUE
     CACHE BOOL "Disable SWO debug messages")
 
