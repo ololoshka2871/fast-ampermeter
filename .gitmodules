@@ -1,20 +1,9 @@
-[submodule "Libs/CANopenNode"]
-	path = Libs/CANopenNode
-	url = https://github.com/iurly/CANopenNode.git
-	branch = stm32hal
-[submodule "Libs/crc_calculator"]
-	path = Libs/crc_calculator
-	url = https://bitbucket.org/Olololshka/crc_calculator.git
-[submodule "tools/OD_src_generator/libedssharp"]
-	path = tools/libedssharp
-        url = https://github.com/gotocoffee1/libedssharp.git
-	branch = xdd
-[submodule "Libs/mbedtls"]
-	path = Libs/mbedtls
-	url = https://github.com/ARMmbed/mbedtls.git
 [submodule "Libs/nanopb/nanopb-dist"]
 	path = Libs/nanopb/nanopb-dist
 	url = https://github.com/nanopb/nanopb.git
 [submodule "Libs/nanopb/ru.sktbelpa.protobufobjects"]
 	path = Libs/nanopb/ru.sktbelpa.protobufobjects
 	url = https://Sctb_Elpa@bitbucket.org/Sctb_Elpa/ru.sktbelpa.protobufobjects.git
+[submodule "Libs/result"]
+	path = Libs/result
+	url = https://github.com/oktal/result.git

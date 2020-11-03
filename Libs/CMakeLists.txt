@@ -35,7 +35,7 @@ SET(HAL_SRC
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_eth.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_flash.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_flash_ex.c
-    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_gpio.c   
+    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_gpio.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_hcd.c
     ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_i2c.c
     ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_hal_i2c_ex.c
@@ -82,7 +82,7 @@ SET(HAL_SRC
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_spi.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_tim.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_usart.c
-    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_usb.c
+##    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_usb.c
 #    ${HAL_BASE_SRC_DIR}/${STM32_FAMILY_LONG_lx}_ll_utils.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32/system_${STM32_FAMILY_LONG_lx}.c

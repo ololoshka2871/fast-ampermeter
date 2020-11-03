@@ -16,7 +16,7 @@ set(BUILD_USE_LTO                       FALSE
     CACHE BOOL "Use link-time optimisztion")
 
 set(HISTORY_SIZE                        32
-    CACHE BOOL "Use link-time optimisztion")
+    CACHE STRING "Use link-time optimisztion")
 
 set(DISABLE_SWO_OUTPUT                  TRUE
     CACHE BOOL "Disable SWO debug messages")
@@ -79,12 +79,11 @@ add_subdirectory(tests)
 include(Doxygen)
 
 # generate doc
-SET(DOXY_USE_MDFILE_AS_MAINPAGE
-                            ${PROJECT_SOURCE_DIR}/README.md)
-SET(DOXY_INPUT "${PROJECT_SOURCE_DIR}/README.md ${PROJECT_SOURCE_DIR}/src")
+SET(DOXY_USE_MDFILE_AS_MAINPAGE ${PROJECT_SOURCE_DIR}/README.md)
+SET(DOXY_INPUT              "${PROJECT_SOURCE_DIR}/README.md ${PROJECT_SOURCE_DIR}/src")
 SET(DOXY_EXTRACT_ALL        YES)
 
-SET(DOXY_PROJECT_NAME       CANOpenBootloader)
+SET(DOXY_PROJECT_NAME       Fast-ampermeter)
 SET(DOXY_OUTPUT_LANGUAGE    "English")
 SET(DOXY_ENABLED_SECTIONS   "developer_sec")
 SET(DOXY_OUTPUT_DIRECTORY   "${CMAKE_CURRENT_BINARY_DIR}/doc")
