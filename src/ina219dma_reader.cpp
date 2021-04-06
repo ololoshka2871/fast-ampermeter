@@ -35,7 +35,7 @@ void INA219DMA_Reader::Start_sending_address() {
 
   const uint8_t *regAddress = &addresses_to_read_from[position];
 
-  auto res = HAL_I2C_Master_Seq_Transmit_DMA /*HAL_I2C_Master_Transmit_DMA*/ (
+  auto res = /*HAL_I2C_Master_Seq_Transmit_DMA*/ HAL_I2C_Master_Transmit_DMA(
       &bus, address, const_cast<uint8_t *>(regAddress),
       sizeof(addresses_to_read_from[0]), I2C_FIRST_FRAME | I2C_LAST_FRAME);
 
