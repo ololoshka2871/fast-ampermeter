@@ -1,8 +1,7 @@
 /**
   ******************************************************************************
-  * @file           : usbd_desc.h
-  * @version        : v1.0_Cube
-  * @brief          : Header for usbd_desc file.
+  * @file           : usbd_custom_hid_if_if.h
+  * @brief          : header file for the usbd_custom_hid_if.c file
   ******************************************************************************
   * COPYRIGHT(c) 2015 STMicroelectronics
   *
@@ -32,25 +31,32 @@
 */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_DESC__H__
-#define __USBD_DESC__H__
+
+#ifndef __USBD_CUSTOM_HID_IF_H_
+#define __USBD_CUSTOM_HID_IF_H_
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_def.h"
+#include "usbd_customhid.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
   */
   
-/** @defgroup USB_DESC
-  * @brief general defines for the usb device library file
+/** @defgroup USBD_CUSTOM_HID
   * @{
   */ 
 
-/** @defgroup USB_DESC_Exported_Defines
+/** @defgroup USBD_CUSTOM_HID_Exported_Defines
+  * @{
+  */ 
+/**
+  * @}
+  */ 
+
+/** @defgroup USBD_CUSTOM_HID_Exported_Types
   * @{
   */
 
@@ -58,40 +64,35 @@
   * @}
   */ 
 
-/** @defgroup USBD_DESC_Exported_TypesDefinitions
+/** @defgroup USBD_CUSTOM_HID_Exported_Macros
   * @{
-  */
+  */ 
+
 /**
   * @}
   */ 
 
-/** @defgroup USBD_DESC_Exported_Macros
+/** @defgroup USBD_CUSTOM_HID_Exported_Variables
   * @{
   */ 
+extern USBD_CUSTOM_HID_ItfTypeDef  USBD_CustomHID_fops_FS;
 /**
   * @}
   */ 
 
-/** @defgroup USBD_DESC_Exported_Variables
+/** @defgroup USBD_CUSTOM_HID_Exported_FunctionsPrototype
   * @{
   */ 
-extern USBD_DescriptorsTypeDef FS_Desc;
+
 /**
   * @}
   */ 
 
-/** @defgroup USBD_DESC_Exported_FunctionsPrototype
-  * @{
-  */ 
-  
-/**
-  * @}
-  */ 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __USBD_DESC_H */
+#endif /* __USBD_CUSTOM_HID_IF_H_ */
 
 /**
   * @}

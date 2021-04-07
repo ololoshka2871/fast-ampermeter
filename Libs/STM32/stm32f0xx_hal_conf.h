@@ -50,7 +50,7 @@
 #define HAL_MODULE_ENABLED
 /*#define HAL_ADC_MODULE_ENABLED   */
 /*#define HAL_CRYP_MODULE_ENABLED   */
-#define HAL_CAN_MODULE_ENABLED
+/*#define HAL_CAN_MODULE_ENABLED    */
 /*#define HAL_CEC_MODULE_ENABLED   */
 /*#define HAL_COMP_MODULE_ENABLED   */
 /*#define HAL_CRC_MODULE_ENABLED   */
@@ -120,8 +120,8 @@
   */
 #if !defined  (HSI14_VALUE)
 #define HSI14_VALUE ((uint32_t)14000000) /*!< Value of the Internal High Speed oscillator for ADC in Hz.
-											 The real value may vary depending on the variations
-											 in voltage and temperature.  */
+                                             The real value may vary depending on the variations
+                                             in voltage and temperature.  */
 #endif /* HSI14_VALUE */
 
 /**
@@ -129,8 +129,8 @@
   */
 #if !defined  (HSI48_VALUE)
 #define HSI48_VALUE ((uint32_t)48000000) /*!< Value of the Internal High Speed oscillator for USB in Hz.
-											 The real value may vary depending on the variations
-											 in voltage and temperature.  */
+                                             The real value may vary depending on the variations
+                                             in voltage and temperature.  */
 #endif /* HSI48_VALUE */
 
 /**
@@ -139,8 +139,8 @@
 #if !defined  (LSI_VALUE)
  #define LSI_VALUE  ((uint32_t)40000)
 #endif /* LSI_VALUE */                      /*!< Value of the Internal Low Speed oscillator in Hz
-											 The real value may vary depending on the variations
-											 in voltage and temperature.  */
+                                             The real value may vary depending on the variations
+                                             in voltage and temperature.  */
 /**
   * @brief External Low Speed oscillator (LSI) value.
   */
@@ -161,8 +161,8 @@
   */
 #define  VDD_VALUE                    ((uint32_t)3300) /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            ((uint32_t)0)    /*!< tick interrupt priority (lowest by default)  */
-																			  /*  Warning: Must be set to higher priority for HAL_Delay()  */
-																			  /*  and HAL_GetTick() usage under interrupt context          */
+                                                                              /*  Warning: Must be set to higher priority for HAL_Delay()  */
+                                                                              /*  and HAL_GetTick() usage under interrupt context          */
 #define  USE_RTOS                     0
 #define  PREFETCH_ENABLE              1
 #define  INSTRUCTION_CACHE_ENABLE     0

@@ -5,36 +5,43 @@ set(BOOTLOADER_SRC
     BoardInit.h
     systick.c
     msp.cpp
-    main.cpp
+#    main.cpp
+    main1.cpp
     hardfault.cpp
     _init.c
     stubs.c
     stubs.cpp
-    SWO_debug.c
 
-    ina219.h
-    ina219.cpp
+    usb_device.h
+    usb_device.c
 
-    ina219dma_reader.cpp
-    ina219dma_reader.h
+#    SWO_debug.c
 
-    usb_cdc_interface.h
-    usb_cdc_interface.c
+#    ina219.h
+#    ina219.cpp
 
-    usbd_desc.h
-    usbd_desc.c
-    usbd_conf.c
+#    ina219dma_reader.cpp
+#    ina219dma_reader.h
 
-    cdc_acm.h
-    cdc_acm.cpp
+#    usb_cdc_interface.h
+#    usb_cdc_interface.c
 
-    rxmessagereader.h
-    rxmessagereader.cpp
+     usbd_desc.h
+     usbd_desc.c
+     usbd_conf.c
+     usbd_custom_hid_if.h
+     usbd_custom_hid_if.c
 
-    txmessagewriter.h
-    txmessagewriter.cpp
+#    cdc_acm.h
+#    cdc_acm.cpp
 
-    history.h
+#    rxmessagereader.h
+#    rxmessagereader.cpp
+
+#    txmessagewriter.h
+#    txmessagewriter.cpp
+
+#    history.h
 )
 
 if(STM32_FAMILY STREQUAL "F0")
