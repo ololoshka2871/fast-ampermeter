@@ -117,7 +117,6 @@ target_compile_definitions(HAL PUBLIC
 
 set(USB_BASE_DIR ${STM32Cube}/Middlewares/ST/STM32_USB_Device_Library)
 set(USB_CORE_DIR ${USB_BASE_DIR}/Core)
-set(USB_CUSTOM_HID_DIR ${USB_BASE_DIR}/Class/CustomHID)
 
 set(USB_SRC
     # ${USB_CORE_DIR}/Src/usbd_conf_template.c
@@ -125,8 +124,6 @@ set(USB_SRC
     ${USB_CORE_DIR}/Src/usbd_ctlreq.c
     # ${USB_CORE_DIR}/Src/usbd_desc_template.c
     ${USB_CORE_DIR}/Src/usbd_ioreq.c
-
-    ${USB_CUSTOM_HID_DIR}/Src/usbd_customhid.c
 )
 
 ADD_LIBRARY(USB STATIC ${USB_SRC})

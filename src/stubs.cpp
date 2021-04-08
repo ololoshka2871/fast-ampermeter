@@ -3,7 +3,7 @@
 
 namespace std {
 
-void terminate() {
+void terminate() noexcept {
   while (1)
     __asm__("BKPT");
 }

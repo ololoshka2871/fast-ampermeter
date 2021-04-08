@@ -29,8 +29,12 @@ set(BOOTLOADER_SRC
      usbd_desc.h
      usbd_desc.c
      usbd_conf.c
+     usbd_customhid.h
+     usbd_customhid.c
      usbd_custom_hid_if.h
      usbd_custom_hid_if.c
+
+     HidSensorSpec.h
 
 #    cdc_acm.h
 #    cdc_acm.cpp

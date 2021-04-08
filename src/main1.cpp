@@ -20,9 +20,9 @@ int main(void) {
   while (1) {
     /* USER CODE END WHILE */
     HAL_Delay(500);
-
+    /*
     USBD_CUSTOM_HID_SendReport_FS(&report, 1);
     report = !report;
-    /* USER CODE BEGIN 3 */
+    */
   }
 }
