@@ -15,14 +15,14 @@ int main(void) {
 
   MX_USB_DEVICE_Init();
 
-  uint8_t report = 0;
+  uint16_t report = 25;
 
   while (1) {
     /* USER CODE END WHILE */
     HAL_Delay(500);
-    /*
-    USBD_CUSTOM_HID_SendReport_FS(&report, 1);
+
+    USBD_CUSTOM_HID_SendReport_FS(reinterpret_cast<uint8_t*>(&report),
+                                  sizeof (report));
     report = !report;
-    */
   }
 }

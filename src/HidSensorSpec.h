@@ -187,13 +187,13 @@
 //state usages
 #define HID_USAGE_SENSOR_STATE                                                          0x0A,0x01,0x02 // NAry
 //state selectors
-#define HID_USAGE_SENSOR_STATE_UNKNOWN_SEL_SEL                                              0x0A,0x00,0x08 // Sel
-#define HID_USAGE_SENSOR_STATE_READY_SEL_SEL                                                0x0A,0x01,0x08 // Sel
-#define HID_USAGE_SENSOR_STATE_NOT_AVAILABLE_SEL_SEL                                        0x0A,0x02,0x08 // Sel
-#define HID_USAGE_SENSOR_STATE_NO_DATA_SEL_SEL                                              0x0A,0x03,0x08 // Sel
-#define HID_USAGE_SENSOR_STATE_INITIALIZING_SEL_SEL                                         0x0A,0x04,0x08 // Sel
-#define HID_USAGE_SENSOR_STATE_ACCESS_DENIED_SEL_SEL                                        0x0A,0x05,0x08 // Sel
-#define HID_USAGE_SENSOR_STATE_ERROR_SEL_SEL                                                0x0A,0x06,0x08 // Sel
+#define HID_USAGE_SENSOR_STATE_UNKNOWN_SEL                                              0x0A,0x00,0x08 // Sel
+#define HID_USAGE_SENSOR_STATE_READY_SEL                                                0x0A,0x01,0x08 // Sel
+#define HID_USAGE_SENSOR_STATE_NOT_AVAILABLE_SEL                                        0x0A,0x02,0x08 // Sel
+#define HID_USAGE_SENSOR_STATE_NO_DATA_SEL                                              0x0A,0x03,0x08 // Sel
+#define HID_USAGE_SENSOR_STATE_INITIALIZING_SEL                                         0x0A,0x04,0x08 // Sel
+#define HID_USAGE_SENSOR_STATE_ACCESS_DENIED_SEL                                        0x0A,0x05,0x08 // Sel
+#define HID_USAGE_SENSOR_STATE_ERROR_SEL                                                0x0A,0x06,0x08 // Sel
 //state enums
 #define HID_USAGE_SENSOR_STATE_UNKNOWN_SEL_ENUM                                             0x01 // Enum
 #define HID_USAGE_SENSOR_STATE_READY_SEL_ENUM                                               0x02 // Enum
@@ -214,12 +214,12 @@
 //event usages
 #define HID_USAGE_SENSOR_EVENT                                                          0x0A,0x02,0x02 // NAry
 //event selectors
-#define HID_USAGE_SENSOR_EVENT_UNKNOWN_SEL_SEL                                              0x0A,0x10,0x08 // Sel
-#define HID_USAGE_SENSOR_EVENT_STATE_CHANGED_SEL_SEL                                        0x0A,0x11,0x08 // Sel
-#define HID_USAGE_SENSOR_EVENT_PROPERTY_CHANGED_SEL_SEL                                     0x0A,0x12,0x08 // Sel
-#define HID_USAGE_SENSOR_EVENT_DATA_UPDATED_SEL_SEL                                         0x0A,0x13,0x08 // Sel
-#define HID_USAGE_SENSOR_EVENT_POLL_RESPONSE_SEL_SEL                                        0x0A,0x14,0x08 // Sel
-#define HID_USAGE_SENSOR_EVENT_CHANGE_SENSITIVITY_SEL_SEL                                   0x0A,0x15,0x08 // Sel
+#define HID_USAGE_SENSOR_EVENT_UNKNOWN_SEL                                              0x0A,0x10,0x08 // Sel
+#define HID_USAGE_SENSOR_EVENT_STATE_CHANGED_SEL                                        0x0A,0x11,0x08 // Sel
+#define HID_USAGE_SENSOR_EVENT_PROPERTY_CHANGED_SEL                                     0x0A,0x12,0x08 // Sel
+#define HID_USAGE_SENSOR_EVENT_DATA_UPDATED_SEL                                         0x0A,0x13,0x08 // Sel
+#define HID_USAGE_SENSOR_EVENT_POLL_RESPONSE_SEL                                        0x0A,0x14,0x08 // Sel
+#define HID_USAGE_SENSOR_EVENT_CHANGE_SENSITIVITY_SEL                                   0x0A,0x15,0x08 // Sel
 #define HID_USAGE_SENSOR_EVENT_MAX_REACHED_SEL                                          0x0A,0x16,0x08 // Sel
 #define HID_USAGE_SENSOR_EVENT_MIN_REACHED_SEL                                          0x0A,0x17,0x08 // Sel
 #define HID_USAGE_SENSOR_EVENT_HIGH_THRESHOLD_CROSS_UPWARD_SEL                          0x0A,0x18,0x08 // Sel
@@ -292,8 +292,8 @@
 #define HID_USAGE_SENSOR_PROPERTY_SENSOR_CONNECTION_TYPE                                0x0A,0x09,0x03 // NAry
 //begin connection type selectors
 #define HID_USAGE_SENSOR_PROPERTY_CONNECTION_TYPE_PC_INTEGRATED_SEL                     0x0A,0x30,0x08 // Sel
-#define HID_USAGE_SENSOR_PROPERTY_CONNECTION_TYPE_PC_ATTACHED_SEL_SEL                       0x0A,0x31,0x08 // Sel
-#define HID_USAGE_SENSOR_PROPERTY_CONNECTION_TYPE_PC_EXTERNAL_SEL_SEL                       0x0A,0x32,0x08 // Sel
+#define HID_USAGE_SENSOR_PROPERTY_CONNECTION_TYPE_PC_ATTACHED_SEL                       0x0A,0x31,0x08 // Sel
+#define HID_USAGE_SENSOR_PROPERTY_CONNECTION_TYPE_PC_EXTERNAL_SEL                       0x0A,0x32,0x08 // Sel
 //end connection type selectors
 //begin connection type enums
 #define HID_USAGE_SENSOR_PROPERTY_CONNECTION_TYPE_PC_INTEGRATED_ENUM                    0x01 // Enum
@@ -319,15 +319,15 @@
 #define HID_USAGE_SENSOR_PROPERTY_RANGE_MINIMUM                                         0x0A,0x15,0x03
 #define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE                                       0x0A,0x16,0x03 // NAry
 //begin reporting state selectors
-#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_NO_EVENTS_SEL_SEL                         0x0A,0x40,0x08 // Sel
-#define HID_USAGE_REPORTING_STATE_ON_NONE_SEL       HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_NO_EVENTS_SEL_SEL
-#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_ALL_EVENTS_SEL_SEL                        0x0A,0x41,0x08 // Sel
-#define HID_USAGE_REPORTING_STATE_ON_ALL_SEL        HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_ALL_EVENTS_SEL_SEL
-#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_THRESHOLD_EVENTS_SEL_SEL                  0x0A,0x42,0x08 // Sel
-#define HID_USAGE_REPORTING_STATE_ON_THRESHOLD_SEL  HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_THRESHOLD_EVENTS_SEL_SEL
-#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_NO_EVENTS_SEL_WAKE_SEL                    0x0A,0x43,0x08 // Sel
-#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_ALL_EVENTS_SEL_WAKE_SEL                   0x0A,0x44,0x08 // Sel
-#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_THRESHOLD_EVENTS_WAKE_SEL_SEL             0x0A,0x45,0x08 // Sel
+#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_NO_EVENTS_SEL                         0x0A,0x40,0x08 // Sel
+#define HID_USAGE_REPORTING_STATE_ON_NONE_SEL       HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_NO_EVENTS_SEL
+#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_ALL_EVENTS_SEL                        0x0A,0x41,0x08 // Sel
+#define HID_USAGE_REPORTING_STATE_ON_ALL_SEL        HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_ALL_EVENTS_SEL
+#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_THRESHOLD_EVENTS_SEL                  0x0A,0x42,0x08 // Sel
+#define HID_USAGE_REPORTING_STATE_ON_THRESHOLD_SEL  HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_THRESHOLD_EVENTS_SEL
+#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_NO_EVENTS_WAKE_SEL                    0x0A,0x43,0x08 // Sel
+#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_ALL_EVENTS_WAKE_SEL                   0x0A,0x44,0x08 // Sel
+#define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_THRESHOLD_EVENTS_WAKE_SEL             0x0A,0x45,0x08 // Sel
 //end reporting state selectors
 //begin reporting state enums
 #define HID_USAGE_SENSOR_PROPERTY_REPORTING_STATE_NO_EVENTS_SEL_ENUM                        0x01 // Enum
