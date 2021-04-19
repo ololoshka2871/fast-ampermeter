@@ -44,10 +44,58 @@
 __ALIGN_BEGIN static const uint8_t
     CUSTOM_HID_ReportDesc_FS[USBD_CUSTOM_HID_REPORT_DESC_SIZE] __ALIGN_END = {
 
+    0x05,   0x01,
+      0x09,   0x02,
+      0xA1,   0x01,
+      0x09,   0x01,
+
+      0xA1,   0x00,
+      0x05,   0x09,
+      0x19,   0x01,
+      0x29,   0x03,
+
+      0x15,   0x00,
+      0x25,   0x01,
+      0x95,   0x03,
+      0x75,   0x01,
+
+      0x81,   0x02,
+      0x95,   0x01,
+      0x75,   0x05,
+      0x81,   0x01,
+
+      0x05,   0x01,
+      0x09,   0x30,
+      0x09,   0x31,
+      0x09,   0x38,
+
+      0x15,   0x81,
+      0x25,   0x7F,
+      0x75,   0x08,
+      0x95,   0x03,
+
+      0x81,   0x06,
+      0xC0,   0x09,
+      0x3c,   0x05,
+      0xff,   0x09,
+
+      0x01,   0x15,
+      0x00,   0x25,
+      0x01,   0x75,
+      0x01,   0x95,
+
+      0x02,   0xb1,
+      0x22,   0x75,
+      0x06,   0x95,
+      0x01,   0xb1,
+
+      0x01,   0xc0
+
+#if 0
     HID_USAGE_PAGE_SENSOR,
     HID_USAGE_SENSOR_TYPE_ENVIRONMENTAL_TEMPERATURE,
     HID_COLLECTION(Physical),
-/*
+
         //feature reports (xmit/receive)
         HID_USAGE_PAGE_SENSOR,
         HID_USAGE_SENSOR_PROPERTY_SENSOR_CONNECTION_TYPE,  // NAry
@@ -131,9 +179,8 @@ __ALIGN_BEGIN static const uint8_t
         HID_REPORT_COUNT(1),
         HID_UNIT_EXPONENT(0x0E), // scale default unit “Celsius” to provide 2 digits past the decimal point
         HID_FEATURE(Data_Var_Abs),
-*/
+
         //input reports (transmit)
-    /*
         HID_USAGE_PAGE_SENSOR,
         HID_USAGE_SENSOR_STATE,
         HID_LOGICAL_MIN_8(0),
@@ -155,7 +202,7 @@ __ALIGN_BEGIN static const uint8_t
         HID_LOGICAL_MAX_8(16),
         HID_REPORT_SIZE(8),
         HID_REPORT_COUNT(1),
-    */
+
         HID_COLLECTION(Logical),
             HID_USAGE_SENSOR_EVENT_UNKNOWN_SEL,
             HID_USAGE_SENSOR_EVENT_STATE_CHANGED_SEL,
@@ -174,7 +221,7 @@ __ALIGN_BEGIN static const uint8_t
         HID_INPUT(Data_Var_Abs),
 
     HID_END_COLLECTION
-
+#endif
 };
 
 /* USB handler declaration */
