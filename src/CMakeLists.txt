@@ -17,11 +17,11 @@ set(BOOTLOADER_SRC
 
 #    SWO_debug.c
 
-#    ina219.h
-#    ina219.cpp
+    ina219.h
+    ina219.cpp
 
-#    ina219dma_reader.cpp
-#    ina219dma_reader.h
+    ina219dma_reader.cpp
+    ina219dma_reader.h
 
 #    usb_cdc_interface.h
 #    usb_cdc_interface.c
@@ -35,6 +35,8 @@ set(BOOTLOADER_SRC
      usbd_custom_hid_if.c
 
      HidSensorSpec.h
+
+     result.h
 
 #    cdc_acm.h
 #    cdc_acm.cpp
@@ -87,12 +89,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     -Wl,--whole-archive
         HAL
     -Wl,--no-whole-archive
-    result
     USB
-)
-
-target_compile_definitions(${PROJECT_NAME} PUBLIC
-    -DHISTORY_SIZE=${HISTORY_SIZE}
 )
 
 function(show_object_size target)

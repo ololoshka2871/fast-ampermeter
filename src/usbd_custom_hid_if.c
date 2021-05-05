@@ -44,14 +44,15 @@
 __ALIGN_BEGIN static const uint8_t
     CUSTOM_HID_ReportDesc_FS[USBD_CUSTOM_HID_REPORT_DESC_SIZE] __ALIGN_END = {
 
-    0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
-    0x09, 0x01,        // Usage (0x01)
-    0xA1, 0x01,        // Collection (Application)
-    0x09, 0x02,        //   Usage (0x02)
-    0x75, 0x08,        //   Report Size (8)
-    0x95, 0x01,        //   Report Count (1)
-    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-    0xC0,              // End Collection
+        0x06, 0x00, 0xFF, // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,       // Usage (0x01)
+        0xA1, 0x01,       // Collection (Application)
+        0x09, 0x02,       //   Usage (0x02)
+        0x75, 0x80,       //   Report Size (4 * sizeof(float) * 8)
+        0x95, 0x01,       //   Report Count (1)
+        0x81, 0x02, //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No
+                    //   Null Position)
+        0xC0,       // End Collection
 
 #if 0
     HID_USAGE_PAGE_SENSOR,
@@ -261,7 +262,8 @@ static int8_t CUSTOM_HID_OutEvent_FS(uint8_t event_idx, uint8_t state) {
  */
 
 int8_t USBD_CUSTOM_HID_SendReport_FS(uint8_t *report, uint16_t len) {
-  return USBD_CUSTOM_HID_SendReport(hUsbDevice_0, report, len);
+  return hUsbDevice_0 ? USBD_CUSTOM_HID_SendReport(hUsbDevice_0, report, len)
+                      : USBD_FAIL;
 }
 /* USER CODE END 7 */
 

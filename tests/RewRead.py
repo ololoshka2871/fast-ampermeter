@@ -2,6 +2,7 @@
 
 import sys
 import hid
+import struct
 
 vendor_id = 0x0483
 product_id = 0x5750
@@ -20,8 +21,8 @@ def get_raw_hid_interface():
     interface = hid.device()
     interface.open_path(raw_hid_interfaces[0]['path'])
 
-    print("Manufacturer: %s" % interface.get_manufacturer_string())
-    print("Product: %s" % interface.get_product_string())
+    # print("Manufacturer: %s" % interface.get_manufacturer_string())
+    # print("Product: %s" % interface.get_product_string())
 
     return interface
 
@@ -51,10 +52,13 @@ def send_raw_packet(data):
 
 
 def read_data(interface):
+
+    r = 0
     while True:
-        d = interface.read(2)
+        d = interface.read(32)
         if d:
-            print(d)
+            res = struct.unpack('<ffff', bytearray(d))
+            print(';'.join(map(str, res)))
 
 
 def main():

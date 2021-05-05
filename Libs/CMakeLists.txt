@@ -136,12 +136,4 @@ target_link_libraries(USB PUBLIC
     HAL
 )
 
-###################
-# Result
-###################
-
-add_library(result INTERFACE)
-target_include_directories(result INTERFACE result)
-
-
 SET(LIBS_DIR            ${CMAKE_CURRENT_SOURCE_DIR}             PARENT_SCOPE)
