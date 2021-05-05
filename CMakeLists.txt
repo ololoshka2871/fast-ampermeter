@@ -72,7 +72,6 @@ endif()
 
 add_subdirectory(Libs)
 add_subdirectory(src)
-add_subdirectory(tests)
 
 ###############################################################################
 

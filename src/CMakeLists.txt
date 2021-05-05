@@ -89,7 +89,6 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     -Wl,--no-whole-archive
     result
     USB
-    nanopb
 )
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC

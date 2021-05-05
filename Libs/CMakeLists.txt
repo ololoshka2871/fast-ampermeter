@@ -143,18 +143,5 @@ target_link_libraries(USB PUBLIC
 add_library(result INTERFACE)
 target_include_directories(result INTERFACE result)
 
-###################
-# nanopb
-###################
-
-add_subdirectory(nanopb)
-set(PROTOBUF_PROTO_FILE ${PROTOBUF_PROTO_FILE} PARENT_SCOPE)
-
-###################
-# opencm3
-###################
-
-
-
 
 SET(LIBS_DIR            ${CMAKE_CURRENT_SOURCE_DIR}             PARENT_SCOPE)
