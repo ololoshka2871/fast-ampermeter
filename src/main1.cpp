@@ -92,17 +92,11 @@ static Result<I2C_HandleTypeDef *, HAL_StatusTypeDef> init_I2C() {
 static void
 result_read_cb(Result<INA219DMA_Reader::Values, HAL_StatusTypeDef> r,
                INA219DMA_Reader &reader) {
-  struct res {
-    res(float ShuntVoltage, float BusVoltage, float Power, float Current)
-        : ShuntVoltage{ShuntVoltage},
-          BusVoltage{BusVoltage}, Power{Power}, Current{Current} {}
-
-    float ShuntVoltage, BusVoltage, Power, Current;
-  };
 
   if (r.isOk()) {
     auto uwr = r.unwrap();
-    res res{uwr.ShuntVoltage(), uwr.BusVoltage(), uwr.Power(), uwr.Current()};
+    float res[]{uwr.ShuntVoltage(), uwr.BusVoltage(), uwr.Power(),
+                uwr.Current()};
 
     USBD_CUSTOM_HID_SendReport_FS(reinterpret_cast<uint8_t *>(&res),
                                   sizeof(res));

@@ -10,7 +10,7 @@ y = []
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('File', type=str, help='Папка с отчетом')
+parser.add_argument('File', type=str, help='Файл с данными')
 
 parser.add_argument('-c', '--column', required=False, default=0, type=int, help='column to plot')
 args = parser.parse_args()
