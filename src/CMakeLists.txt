@@ -5,8 +5,7 @@ set(BOOTLOADER_SRC
     BoardInit.h
     systick.c
     msp.cpp
-#    main.cpp
-    main1.cpp
+    main.cpp
     hardfault.cpp
     _init.c
     stubs.c
@@ -23,31 +22,17 @@ set(BOOTLOADER_SRC
     ina219dma_reader.cpp
     ina219dma_reader.h
 
-#    usb_cdc_interface.h
-#    usb_cdc_interface.c
+    usbd_desc.h
+    usbd_desc.c
+    usbd_conf.c
+    usbd_customhid.h
+    usbd_customhid.c
+    usbd_custom_hid_if.h
+    usbd_custom_hid_if.c
 
-     usbd_desc.h
-     usbd_desc.c
-     usbd_conf.c
-     usbd_customhid.h
-     usbd_customhid.c
-     usbd_custom_hid_if.h
-     usbd_custom_hid_if.c
+    HidSensorSpec.h
 
-     HidSensorSpec.h
-
-     result.h
-
-#    cdc_acm.h
-#    cdc_acm.cpp
-
-#    rxmessagereader.h
-#    rxmessagereader.cpp
-
-#    txmessagewriter.h
-#    txmessagewriter.cpp
-
-#    history.h
+    result.h
 )
 
 if(STM32_FAMILY STREQUAL "F0")
